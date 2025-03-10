@@ -1,55 +1,7 @@
-// import { Tabs } from 'expo-router';
-// import React from 'react';
-// import { View } from 'react-native';
-// import { Ionicons } from '@expo/vector-icons';
-
-// const TabsLayout = () => {
-//     return (
-//         <Tabs
-//             screenOptions={{
-//                 tabBarShowLabel: false,
-//             }}
-//         >
-//             <Tabs.Screen
-//                 name="index"
-//                 options={{
-//                     tabBarIcon: ({ focused }) => (
-//                         <View className={`${focused ? "bg-black p-3 rounded-full" : ""} items-center justify-center`}>
-//                             <Ionicons name="home" size={24} color={focused ? "white" : "#d3d3d3"} />
-//                         </View>
-//                     ),
-//                 }}
-//             />
-//             <Tabs.Screen
-//                 name="cart"
-//                 options={{
-//                     tabBarIcon: ({ focused }) => (
-//                         <View className={`${focused ? "bg-black p-3 rounded-full" : ""} items-center justify-center`}>
-//                             <Ionicons name={focused ? "bag" : "bag-handle"} size={24} color={focused ? "white" : "#d3d3d3"} />
-//                         </View>
-//                     ),
-//                 }}
-//             />
-//             <Tabs.Screen
-//                 name="profile"
-//                 options={{
-//                     tabBarIcon: ({ focused }) => (
-//                         <View className={`${focused ? "bg-black p-3 rounded-full" : ""} items-center justify-center`}>
-//                             <Ionicons name="settings" size={24} color={focused ? "white" : "#d3d3d3"} />
-//                         </View>
-//                     ),
-//                 }}
-//             />
-//         </Tabs>
-//     );
-// };
-
-// export default TabsLayout;
-
 import { Tabs } from 'expo-router';
 import React from 'react';
 import { View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Feather, Ionicons } from '@expo/vector-icons';
 
 const TabsLayout = () => {
     return (
@@ -79,19 +31,19 @@ const TabsLayout = () => {
                     shadowRadius: 10,
                     elevation: 5,
                     paddingHorizontal: 10,
+                    zIndex: 10,
                 },
                 headerShown: false,
-                tabBarActiveTintColor: "#7040F2",
-                tabBarInactiveTintColor: "#a3a3a3",
+                tabBarActiveTintColor: "#a3a3a3",
+                tabBarInactiveTintColor: "#4b4b4b",
             }}
         >
             <Tabs.Screen
                 name="index"
                 options={{
-                    tabBarLabel: "Home",
-                    tabBarIcon: ({ color }) => (
-                        <View className="items-center justify-center">
-                            <Ionicons name="home" size={22} color={color} />
+                    tabBarIcon: ({ color, focused }) => (
+                        <View className={`items-center justify-center mt-[1.5rem] ${focused ? "bg-black py-3 px-[13px] rounded-full" : ""}`}>
+                            <Feather name="home" size={24} color={color} />
                         </View>
                     ),
                 }}
@@ -99,10 +51,9 @@ const TabsLayout = () => {
             <Tabs.Screen
                 name="cart"
                 options={{
-                    tabBarLabel: "Search",
-                    tabBarIcon: ({ color }) => (
-                        <View className="items-center justify-center ">
-                            <Ionicons name="search" size={22} color={color} />
+                    tabBarIcon: ({ color, focused }) => (
+                        <View className={`items-center justify-center mt-[1.5rem] ${focused ? "bg-black py-3 px-[13px] rounded-full" : ""}`}>
+                            <Feather name="shopping-bag" size={24} color={color} />
                         </View>
                     ),
                 }}
@@ -110,10 +61,9 @@ const TabsLayout = () => {
             <Tabs.Screen
                 name="profile"
                 options={{
-                    tabBarLabel: "Profile",
-                    tabBarIcon: ({ color }) => (
-                        <View className="items-center justify-center">
-                            <Ionicons name="person" size={22} color={color} />
+                    tabBarIcon: ({ color, focused }) => (
+                        <View className={`items-center justify-center mt-[1.5rem] ${focused ? "bg-black py-3 px-[13px] rounded-full" : ""}`}>
+                            <Ionicons name="settings-outline" size={24} color={color} />
                         </View>
                     ),
                 }}

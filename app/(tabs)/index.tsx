@@ -6,6 +6,7 @@ import { Dimensions, Image, View, StyleSheet, Text } from "react-native";
 import Carousel from 'react-native-reanimated-carousel';
 import { Slide, slides } from "../const";
 import ProductList from "@/components/product-list";
+import { ScrollView } from "react-native";
 
 const { width } = Dimensions.get("window");
 
@@ -37,67 +38,69 @@ export default function Index() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.carouselContainer}>
-        <Carousel
-          loop
-          width={width}
-          height={200}
-          autoPlay={true}
-          data={slides}
-          scrollAnimationDuration={1000}
-          autoPlayInterval={3000}
-          onSnapToItem={(index) => setActiveIndex(index)}
-          renderItem={renderItem}
-        />
+      <ScrollView contentContainerStyle={{ flexGrow: 1, paddingBottom: 100 }}>
+        <View style={styles.carouselContainer}>
+          <Carousel
+            loop
+            width={width}
+            height={200}
+            autoPlay={true}
+            data={slides}
+            scrollAnimationDuration={1000}
+            autoPlayInterval={3000}
+            onSnapToItem={(index) => setActiveIndex(index)}
+            renderItem={renderItem}
+          />
 
-        {/* Pagination dots */}
-        <View style={styles.paginationContainer}>
-          {slides.map((_, index) => (
-            <View
-              key={index}
-              style={[
-                styles.paginationDot,
-                {
-                  backgroundColor: index === activeIndex
-                    ? 'rgba(0, 0, 0, 0.8)'
-                    : 'rgba(0, 0, 0, 0.3)'
-                }
-              ]}
-            />
-          ))}
+          {/* Pagination dots */}
+          <View style={styles.paginationContainer}>
+            {slides.map((_, index) => (
+              <View
+                key={index}
+                style={[
+                  styles.paginationDot,
+                  {
+                    backgroundColor: index === activeIndex
+                      ? 'rgba(0, 0, 0, 0.8)'
+                      : 'rgba(0, 0, 0, 0.3)'
+                  }
+                ]}
+              />
+            ))}
+          </View>
         </View>
-      </View>
-      <View className="space-y-1">
-        <Text className="text-3xl text-center font-bold mt-4">
-          Enjoy Your Youth!
-        </Text>
-        <View className="text-center px-4 w-full flex items-center justify-center">
-          <Text className="w-full py-2 text-center">
-            Không chỉ là thời trang, TEELAB còn là "phòng thí nghiệm" của tuổi
-            trẻ - nơi nghiên cứu và cho ra đời nguồn năng lượng mang tên
-            "Youth". Chúng mình luôn muốn tạo nên những trải nghiệm vui vẻ, năng
-            động và trẻ trung.
+        <View className="space-y-1">
+          <Text className="text-3xl text-center font-bold mt-4">
+            Enjoy Your Youth!
           </Text>
+          <View className="text-center px-4 w-full flex items-center justify-center">
+            <Text className="w-full py-2 text-center">
+              Không chỉ là thời trang, TEELAB còn là "phòng thí nghiệm" của tuổi
+              trẻ - nơi nghiên cứu và cho ra đời nguồn năng lượng mang tên
+              "Youth". Chúng mình luôn muốn tạo nên những trải nghiệm vui vẻ, năng
+              động và trẻ trung.
+            </Text>
+          </View>
         </View>
-      </View>
-      {
-        dataProductHome.length > 0 &&
-        dataProductHome.map((item, index) => {
-          if (item.products.length > 0) {
-            return (
-              <React.Fragment key={item.category._id || index}>
-                <ProductList
-                  isLoading={isLoading}
-                  title={item.category.name}
-                  products={item?.products}
-                  isPagination={false}
-                />
-              </React.Fragment>
-            );
-          }
-          return null;
-        })
-      }
+        {
+          dataProductHome.length > 0 &&
+          dataProductHome.map((item, index) => {
+            if (item.products.length > 0) {
+              return (
+                <React.Fragment key={item.category._id || index}>
+                  <ProductList
+                    isLoading={isLoading}
+                    title={item.category.name}
+                    products={item?.products}
+                    isPagination={false}
+                  />
+                </React.Fragment>
+              );
+            }
+            return null;
+          })
+        }
+      </ScrollView>
     </View>
   );
 }
