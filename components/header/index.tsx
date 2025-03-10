@@ -24,9 +24,9 @@ const Header = ({ isShowSearch = true }: IProps) => {
 
     return (
         <View>
-            <View className="px-4 py-2 bg-white w-full flex-row flex items-center justify-between gap-4">
+            <View className="px-4 pt-4 pb-2 bg-white w-full flex-row flex items-center justify-between gap-4">
                 <Ionicons name="menu" size={24} color="black" />
-                <Image source={{ uri: "https://teelab-three.vercel.app/assets/logo-H_P3Ts4s.png" }} className='h-14 w-36 object-cover' />
+                <Image source={require("../../assets/images/logo.png")} style={{ height: 50, width: 150 }} />
                 <Image source={{ uri: "https://avatar.iran.liara.run/public" }} className='h-10 w-10 rounded-full' />
             </View>
             {

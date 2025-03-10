@@ -27,7 +27,7 @@ export default function Index() {
     return (
       <View style={styles.slideContainer}>
         <Image
-          source={{ uri: item.image }}
+          source={item.image}
           style={styles.image}
           resizeMode="cover"
         />
