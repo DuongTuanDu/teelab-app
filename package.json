@@ -16,7 +16,9 @@
   },
   "dependencies": {
     "@expo/vector-icons": "^14.0.2",
+    "@gluestack-ui/avatar": "^0.1.18",
     "@gluestack-ui/button": "^1.0.13",
+    "@gluestack-ui/checkbox": "^0.1.38",
     "@gluestack-ui/form-control": "^0.1.19",
     "@gluestack-ui/icon": "^0.1.25",
     "@gluestack-ui/input": "^0.1.37",
@@ -24,6 +26,7 @@
     "@gluestack-ui/modal": "^0.1.40",
     "@gluestack-ui/nativewind-utils": "^1.0.26",
     "@gluestack-ui/overlay": "^0.1.21",
+    "@gluestack-ui/popover": "^0.1.48",
     "@gluestack-ui/spinner": "^0.1.15",
     "@gluestack-ui/toast": "^1.0.9",
     "@legendapp/motion": "^2.4.0",

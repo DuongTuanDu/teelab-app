@@ -1,16 +1,20 @@
 import { EvilIcons, Ionicons } from '@expo/vector-icons'
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Image, View } from 'react-native'
 import { Input, InputField, InputIcon, InputSlot } from '../ui/input'
 import { useGetAllCategoryQuery } from '@/redux/category/category.query'
 import { CategoryActions } from '@/redux/category/category.slice'
 import Loading from '../loading'
 import { useAppDispatch, useAppSelector } from '@/hooks/useRedux'
+import DrawerMenu from '../drawer-menu'
+import { useRouter } from 'expo-router'
 
 interface IProps {
     isShowSearch?: boolean
 }
 const Header = ({ isShowSearch = true }: IProps) => {
+    const router = useRouter()
+    const [openMenu, setOpenMenu] = useState<boolean>(false)
     const { isAuthenticated } = useAppSelector(state => state.auth)
     const dispatch = useAppDispatch()
     const { data, isLoading } = useGetAllCategoryQuery()
@@ -25,9 +29,15 @@ const Header = ({ isShowSearch = true }: IProps) => {
 
     return (
         <View>
+            <DrawerMenu
+                {...{
+                    open: openMenu,
+                    onClose: () => setOpenMenu(false)
+                }}
+            />
             <View className="px-4 pt-4 pb-2 bg-white w-full flex-row flex items-center justify-between gap-4">
-                <Ionicons name="menu" size={24} color="black" />
-                <Image source={require("../../assets/images/logo.png")} style={{ height: 50, width: 150 }} />
+                <Ionicons onPress={() => setOpenMenu(true)} name="menu" size={24} color="black" />
+                <Image onProgress={() => router.push("/")} source={require("../../assets/images/logo.png")} style={{ height: 50, width: 150 }} />
                 {
                     !isAuthenticated ?
                         <EvilIcons name='user' size={40} /> :

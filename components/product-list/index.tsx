@@ -3,6 +3,8 @@ import { View, Text, FlatList, Image, TouchableOpacity, ActivityIndicator, Dimen
 import { IProduct } from '@/redux/product/product.interface';
 import { FontAwesome, Ionicons } from '@expo/vector-icons';
 import { formatPrice } from '@/helpers/formatPrice';
+import { Link } from 'expo-router';
+import { useRouter } from "expo-router";
 
 interface IProps {
     products: IProduct[];
@@ -16,7 +18,6 @@ interface IProps {
     isPagination?: boolean;
     isLoading: boolean;
     onPageChange?: (page: number) => void;
-    onProductPress?: (product: IProduct) => void;
 }
 
 const { width } = Dimensions.get('window');
@@ -30,9 +31,8 @@ const ProductList = (props: IProps) => {
         isPagination = false,
         isLoading,
         onPageChange,
-        onProductPress
     } = props;
-
+    const router = useRouter();
     // Calculate discount percentage
     const calculateDiscount = (originalPrice: number, finalPrice: number) => {
         return Math.round(((originalPrice - finalPrice) / originalPrice) * 100);
@@ -47,7 +47,7 @@ const ProductList = (props: IProps) => {
             <TouchableOpacity
                 className="mb-4 rounded-xl overflow-hidden bg-white"
                 style={{ width: ITEM_WIDTH }}
-                onPress={() => onProductPress && onProductPress(item)}
+                onPress={() => router.push(`/products/${item.slug}`)}
                 activeOpacity={0.7}
             >
                 <View className="relative">
@@ -80,9 +80,9 @@ const ProductList = (props: IProps) => {
                     </Text>
 
                     {/* Product Name */}
-                    <Text className="text-sm font-medium text-gray-800 mb-1" numberOfLines={2}>
+                    <Link href={`/products/${item.slug}`} className="text-sm font-medium text-gray-800 mb-1" numberOfLines={2}>
                         {item.name}
-                    </Text>
+                    </Link>
 
                     {/* Rating */}
                     <View className="flex-row items-center mb-2">
