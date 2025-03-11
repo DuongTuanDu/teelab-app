@@ -1,4 +1,4 @@
-export interface IUser {
+export interface ICustomer {
     _id: string,
     username: string,
     email: string
@@ -9,6 +9,6 @@ export interface IUser {
 }
 
 export interface IAuthState {
-    customer: IUser | null,
+    customer: ICustomer | null,
     isAuthenticated: boolean
 }

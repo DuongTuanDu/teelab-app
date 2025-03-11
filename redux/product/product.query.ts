@@ -18,10 +18,19 @@ export const productApi = createApi({
                     method: 'GET',
                 }
             }
+        }),
+        getProductDetail: builder.query<IResponseWithData<IProduct>, string>({
+            query: (slug) => {
+                return {
+                    url: `/product-detail/${slug}`,
+                    method: 'GET',
+                }
+            }
         })
     })
 });
 
 export const {
-    useGetProductHomeQuery
+    useGetProductHomeQuery,
+    useGetProductDetailQuery
 } = productApi;
