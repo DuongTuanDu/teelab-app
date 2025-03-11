@@ -14,6 +14,7 @@ export interface IReview {
         }
         name: string
     }
+    createdAt: string
 }
 
 export interface IReviewState {

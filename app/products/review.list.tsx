@@ -1,48 +1,15 @@
-// import { useGetReviewsQuery } from '@/redux/review/review.query'
-// import React, { useState } from 'react'
-// import { Text, View } from 'react-native'
-
-// const ReviewList = ({ slug }: { slug: string }) => {
-//     const [query, setQuery] = useState<{
-//         page: number,
-//         pageSize: number
-//     }>({
-//         page: 1,
-//         pageSize: 10
-//     })
-//     const { data, isLoading } = useGetReviewsQuery({
-//         ...query,
-//         slug
-//     }, { skip: !slug })
-
-//     const reviews = data?.data.data || []
-//     const pagination = data?.data.pagination
-//     const rateDistribution = data?.data.rateDistribution
-
-//     if (!isLoading && !reviews.length) return (
-//         <View className="bg-gray-50 p-4 rounded-lg items-center">
-//             <Text className="text-gray-500">Chưa có đánh giá nào</Text>
-//         </View>
-//     )
-
-//     return (
-//         <View>
-//             ReviewList
-//         </View>
-//     )
-// }
-
-// export default ReviewList
-
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { View, Text, Image, TouchableOpacity, FlatList, ActivityIndicator } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { useGetReviewsQuery } from '@/redux/review/review.query'
 import { IRateDistribution, IReview } from '@/redux/review/review.interface'
+import dayjs from "@/utils/dayjs.timezone"
+import { useAppDispatch } from '@/hooks/useRedux'
+import { ReviewActions } from '@/redux/review/review.slice'
 
 const RenderStars = ({ rating }: { rating: number }) => {
     return (
-        <View style={{ flexDirection: 'row' }}>
+        <View className='flex flex-row gap-1'>
             {[1, 2, 3, 4, 5].map((star) => (
                 <Ionicons
                     key={star}
@@ -57,14 +24,7 @@ const RenderStars = ({ rating }: { rating: number }) => {
 
 const ReviewItem = ({ review }: { review: IReview }) => {
     return (
-        <View style={{
-            backgroundColor: 'white',
-            padding: 16,
-            borderRadius: 8,
-            marginBottom: 12,
-            borderWidth: 1,
-            borderColor: '#f0f0f0'
-        }}>
+        <View className="py-2 my-2 px-3 border border-gray-200 rounded-lg shadow-xs">
             <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
                 {review.user?.avatar?.url ? (
                     <Image
@@ -89,7 +49,7 @@ const ReviewItem = ({ review }: { review: IReview }) => {
                         <Text style={{ color: '#888' }}>👤</Text>
                     </View>
                 )}
-                <View>
+                <View className='space-y-1'>
                     <Text style={{
                         fontWeight: 'bold',
                         color: '#333'
@@ -117,8 +77,8 @@ const ReviewItem = ({ review }: { review: IReview }) => {
                             key={index}
                             source={{ uri: img.url }}
                             style={{
-                                width: 80,
-                                height: 80,
+                                width: 50,
+                                height: 50,
                                 borderRadius: 8,
                                 marginRight: 8
                             }}
@@ -126,11 +86,14 @@ const ReviewItem = ({ review }: { review: IReview }) => {
                     ))}
                 </View>
             )}
+            <View className='flex items-end'>
+                <Text className='text-sm text-gray-400'>{dayjs(review.createdAt).fromNow()}</Text>
+            </View>
         </View>
     )
 }
 
-const RatingBar = ({ rateDistribution }: { rateDistribution?: IRateDistribution }) => {
+const RatingBar = ({ rateDistribution, averageRating = 0 }: { averageRating: number, rateDistribution?: IRateDistribution }) => {
     if (!rateDistribution) return null;
 
     const totalReviews = Object.values(rateDistribution).reduce((a, b) => a + b, 0);
@@ -142,8 +105,8 @@ const RatingBar = ({ rateDistribution }: { rateDistribution?: IRateDistribution 
             borderRadius: 8,
             marginBottom: 16
         }}>
-            <Text className="text-center font-medium text-base">
-                Tổng quan
+            <Text className="text-center font-medium text-2xl">
+                {averageRating} ⭐
             </Text>
             {[5, 4, 3, 2, 1].map((rating) => {
                 const count = rateDistribution[rating as keyof IRateDistribution];
@@ -188,6 +151,7 @@ const RatingBar = ({ rateDistribution }: { rateDistribution?: IRateDistribution 
 }
 
 const ReviewList = ({ slug }: { slug: string }) => {
+    const dispatch = useAppDispatch()
     const [query, setQuery] = useState({
         page: 1,
         pageSize: 10
@@ -198,12 +162,22 @@ const ReviewList = ({ slug }: { slug: string }) => {
         { skip: !slug }
     );
 
+    useEffect(() => {
+        if (data?.data) {
+            dispatch(ReviewActions.setRateInfor({
+                averageRating: data.averageRating || 0,
+                totalRate: data.pagination?.totalItems || 0
+            }))
+        }
+    }, [data?.data])
+
     const reviews = data?.data || [];
     const pagination = data?.pagination;
     const rateDistribution = data?.rateDistribution;
+    const averageRating = data?.averageRating || 0;
 
     const handleNextPage = () => {
-        if (pagination && pagination.page < pagination.totalPages) {
+        if (pagination && pagination.page < pagination.totalPage) {
             setQuery(prev => ({ ...prev, page: prev.page + 1 }));
         }
     };
@@ -241,7 +215,7 @@ const ReviewList = ({ slug }: { slug: string }) => {
 
     return (
         <View>
-            <RatingBar rateDistribution={rateDistribution} />
+            <RatingBar rateDistribution={rateDistribution} averageRating={averageRating} />
 
             <FlatList
                 data={reviews}
@@ -268,15 +242,15 @@ const ReviewList = ({ slug }: { slug: string }) => {
                             </TouchableOpacity>
 
                             <Text style={{ color: '#666' }}>
-                                Trang {pagination.page} / {pagination.totalPages}
+                                Trang {pagination.page} / {pagination.totalPage}
                             </Text>
 
                             <TouchableOpacity
                                 onPress={handleNextPage}
-                                disabled={pagination.page === pagination.totalPages}
+                                disabled={pagination.page === pagination.totalPage}
                                 style={{
                                     marginLeft: 16,
-                                    opacity: pagination.page === pagination.totalPages ? 0.5 : 1
+                                    opacity: pagination.page === pagination.totalPage ? 0.5 : 1
                                 }}
                             >
                                 <Ionicons name="chevron-forward" size={24} color="#333" />

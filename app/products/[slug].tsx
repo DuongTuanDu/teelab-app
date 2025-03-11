@@ -1,8 +1,8 @@
 import Loading from '@/components/loading'
 import { useGetProductDetailQuery, useGetProductHomeQuery } from '@/redux/product/product.query'
 import { useLocalSearchParams, useRouter } from 'expo-router'
-import React, { useState, useRef } from 'react'
-import { Text, View, Image, ScrollView, TouchableOpacity, Dimensions, FlatList } from 'react-native'
+import React, { useState, useRef, useEffect } from 'react'
+import { Text, View, Image, ScrollView, TouchableOpacity, Dimensions, FlatList, Pressable } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Feather, AntDesign } from '@expo/vector-icons'
 import Animated, { FadeIn } from 'react-native-reanimated'
@@ -10,16 +10,36 @@ import { formatPrice } from '@/helpers/formatPrice'
 import RenderHTML from "react-native-render-html";
 import ProductList from '@/components/products/product.list'
 import ReviewList from './review.list'
+import { useAppSelector } from '@/hooks/useRedux'
+import { size } from '../const'
+import { ICart } from '@/redux/cart/cart.interface'
+import {
+    useToast,
+    Toast,
+    ToastTitle,
+    ToastDescription,
+} from "@/components/ui/toast"
 
 const { width } = Dimensions.get('window')
 
 const ProductDetail = () => {
+    const toast = useToast()
+    const { averageRating, totalRate } = useAppSelector(state => state.review)
     const { slug } = useLocalSearchParams()
     const router = useRouter()
     const scrollRef = useRef<ScrollView>(null)
     const slugValue = Array.isArray(slug) ? slug[0] : slug;
     const [quantity, setQuantity] = useState(1)
     const [selectedVariant, setSelectedVariant] = useState(0)
+    const [cartItem, setCartItem] = useState<ICart>({
+        productId: "",
+        name: "",
+        image: "",
+        size: "S",
+        color: "",
+        price: 0,
+        quantity: 1,
+    })
 
     const { data, isLoading } = useGetProductDetailQuery(slugValue, {
         skip: !slugValue
@@ -31,9 +51,30 @@ const ProductDetail = () => {
     const product = data?.data || null
     const otherProducts = dataOtherProduct?.data || []
 
+    useEffect(() => {
+        if (product && !isLoading) {
+            setCartItem((prev) => ({
+                ...prev,
+                productId: product._id,
+                name: product.name,
+                image: product.variants?.[0]?.image?.url || "",
+                color: product.variants?.[0]?.color || "",
+                price: product.isPromotion && product?.promotion
+                    ? product.promotion.finalPrice
+                    : product.price,
+            }));
+        }
+    }, [product, isLoading]);
+
+    const handleCartItem = (key: string, value: string | number) => {
+        setCartItem((prev) => ({
+            ...prev,
+            [key]: value,
+        }));
+    };
+
     const handleAddToCart = () => {
-        // Add to cart logic here
-        console.log(`Added ${quantity} of ${product?.name} to cart`)
+
     }
 
     const handleBuyNow = () => {
@@ -55,8 +96,14 @@ const ProductDetail = () => {
         return stars
     }
 
-    const increaseQuantity = () => setQuantity(prev => prev + 1)
-    const decreaseQuantity = () => setQuantity(prev => prev > 1 ? prev - 1 : 1)
+    const increaseQuantity = () => setCartItem(prev => ({
+        ...prev,
+        quantity: prev.quantity + 1
+    }))
+    const decreaseQuantity = () => setCartItem(prev => ({
+        ...prev,
+        quantity: prev.quantity > 1 ? prev.quantity - 1 : 1
+    }))
 
     if (isLoading) return <Loading />
 
@@ -113,8 +160,11 @@ const ProductDetail = () => {
                             {product.variants.map((variant, index) => (
                                 <TouchableOpacity
                                     key={index}
-                                    className={`w-10 h-10 rounded-full border-2 mx-1 overflow-hidden ${selectedVariant === index + 1 ? 'border-blue-500' : 'border-gray-300'}`}
-                                    onPress={() => setSelectedVariant(index + 1)}
+                                    className={`w-10 h-10 rounded-full border-2 mx-1 overflow-hidden ${variant.color === cartItem.color ? 'border-blue-500' : 'border-gray-300'}`}
+                                    onPress={() => {
+                                        handleCartItem("color", variant.color);
+                                        handleCartItem("image", variant.image.url);
+                                    }}
                                 >
                                     <Image
                                         source={{ uri: variant.image.url }}
@@ -153,9 +203,9 @@ const ProductDetail = () => {
 
                     <View className="flex-row items-center mt-2">
                         <View className="flex-row">
-                            {renderRatingStars(product.averageRating)}
+                            {renderRatingStars(averageRating)}
                         </View>
-                        <Text className="ml-2 text-gray-600">({product.totalReviews} đánh giá)</Text>
+                        <Text className="ml-2 text-gray-600">({totalRate} đánh giá)</Text>
                     </View>
 
                     {/* Category */}
@@ -175,10 +225,10 @@ const ProductDetail = () => {
                                 className="w-10 h-10 items-center justify-center bg-gray-100"
                                 onPress={decreaseQuantity}
                             >
-                                <AntDesign name="minus" size={18} color={quantity > 1 ? "#333" : "#ccc"} />
+                                <AntDesign name="minus" size={18} color={cartItem.quantity > 1 ? "#333" : "#ccc"} />
                             </TouchableOpacity>
                             <View className="w-10 h-10 items-center justify-center">
-                                <Text className="text-gray-800 font-medium">{quantity}</Text>
+                                <Text className="text-gray-800 font-medium">{cartItem.quantity}</Text>
                             </View>
                             <TouchableOpacity
                                 className="w-10 h-10 items-center justify-center bg-gray-100"
@@ -188,10 +238,25 @@ const ProductDetail = () => {
                             </TouchableOpacity>
                         </View>
                     </View>
+                    <View className="flex flex-row flex-wrap gap-2 mt-4">
+                        {size.map((itemSize, index) => (
+                            <Pressable
+                                onPress={() => handleCartItem("size", itemSize)}
+                                key={index}
+                                className={`w-12 h-12 flex flex-row items-center justify-center rounded-lg font-bold border-2 transition-all
+                                        ${cartItem.size === itemSize
+                                        ? "bg-rose-600 text-white border-rose-600"
+                                        : "bg-white text-gray-700 border-gray-200 hover:border-rose-600"
+                                    }`}
+                            >
+                                {itemSize}
+                            </Pressable>
+                        ))}
+                    </View>
                 </View>
 
                 {/* Description */}
-                <View className="px-4 py-4 border-t border-gray-100">
+                <View className="px-4 border-t border-gray-100">
                     <Text className="text-lg font-bold text-gray-800 mb-2">Mô tả sản phẩm</Text>
                     <RenderHTML contentWidth={width} source={{ html: product.description }} />
                 </View>
@@ -200,30 +265,6 @@ const ProductDetail = () => {
                 <View className="px-4 py-4 border-t border-gray-100 space-y-2">
                     <Text className="text-lg font-bold text-gray-800">Đánh giá & Nhận xét</Text>
                     <ReviewList slug={product.slug} />
-                    {/* {product.totalReviews > 0 ? (
-                        <View className="bg-gray-50 p-3 rounded-lg">
-                            <View className="flex-row items-center">
-                                <Image
-                                    source={{ uri: 'https://randomuser.me/api/portraits/men/32.jpg' }}
-                                    style={{ width: 40, height: 40, borderRadius: 20 }}
-                                />
-                                <View className="ml-2">
-                                    <Text className="font-medium text-gray-800">Khách hàng</Text>
-                                    <View className="flex-row mt-1">
-                                        {renderRatingStars(5)}
-                                    </View>
-                                </View>
-                                <Text className="ml-auto text-gray-500 text-xs">2 ngày trước</Text>
-                            </View>
-                            <Text className="mt-2 text-gray-600">
-                                Sản phẩm rất tốt, đóng gói cẩn thận, giao hàng nhanh chóng!
-                            </Text>
-                        </View>
-                    ) : (
-                        <View className="bg-gray-50 p-4 rounded-lg items-center">
-                            <Text className="text-gray-500">Chưa có đánh giá nào</Text>
-                        </View>
-                    )} */}
                 </View>
 
                 {/* Related Products */}
@@ -238,7 +279,6 @@ const ProductDetail = () => {
                         </View>
                     )
                 }
-
             </ScrollView>
 
             {/* Bottom Action Bar */}

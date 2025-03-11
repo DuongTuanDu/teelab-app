@@ -21,9 +21,9 @@ const createAxiosInstance = (): AxiosInstance => {
     });
 
     instance.interceptors.request.use(
-        (config: InternalAxiosRequestConfig) => {
+        async (config: InternalAxiosRequestConfig) => {
             if (config.headers) {
-                const accessToken = AsyncStorage.getItem("ACCESS_TOKEN")
+                const accessToken = await AsyncStorage.getItem("ACCESS_TOKEN")
                 if (accessToken) {
                     config.headers['X-Customer-Header'] = `Bearer ${accessToken}`;
                 }

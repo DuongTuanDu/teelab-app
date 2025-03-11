@@ -3,8 +3,8 @@ import { IRateDistribution } from "@/redux/review/review.interface";
 export interface IPagination {
     page: number;
     pageSize: number;
-    totalPages: number;
-    total: number;
+    totalPage: number;
+    totalItems: number;
 }
 
 export interface IResponse {

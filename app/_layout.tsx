@@ -4,6 +4,7 @@ import "./global.css"
 import { store } from "@/redux/store";
 import { Provider } from 'react-redux'
 import LayoutScreen from "@/components/layout";
+import ReduxSync from "@/redux/redux-sync";
 
 export default function RootLayout() {
   const segments = useSegments() as string[];
@@ -12,6 +13,7 @@ export default function RootLayout() {
   return (
     <Provider store={store}>
       <GluestackUIProvider>
+        <ReduxSync />
         {isAuthScreen ? (
           <Stack screenOptions={{ headerShown: false }} />
         ) : (
