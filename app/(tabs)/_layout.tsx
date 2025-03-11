@@ -42,7 +42,7 @@ const TabsLayout = () => {
                 name="index"
                 options={{
                     tabBarIcon: ({ color, focused }) => (
-                        <View className={`items-center justify-center mt-[1.5rem] ${focused ? "bg-black py-3 px-[13px] rounded-full" : ""}`}>
+                        <View className={`items-center justify-center mt-[22px] ${focused ? "bg-black py-3 px-[13px] rounded-full" : ""}`}>
                             <Feather name="home" size={24} color={color} />
                         </View>
                     ),
@@ -52,7 +52,7 @@ const TabsLayout = () => {
                 name="cart"
                 options={{
                     tabBarIcon: ({ color, focused }) => (
-                        <View className={`items-center justify-center mt-[1.5rem] ${focused ? "bg-black py-3 px-[13px] rounded-full" : ""}`}>
+                        <View className={`items-center justify-center mt-[22px] ${focused ? "bg-black py-3 px-[13px] rounded-full" : ""}`}>
                             <Feather name="shopping-bag" size={24} color={color} />
                         </View>
                     ),
@@ -62,7 +62,7 @@ const TabsLayout = () => {
                 name="profile"
                 options={{
                     tabBarIcon: ({ color, focused }) => (
-                        <View className={`items-center justify-center mt-[1.5rem] ${focused ? "bg-black py-3 px-[13px] rounded-full" : ""}`}>
+                        <View className={`items-center justify-center mt-[22px] ${focused ? "bg-black py-3 px-[13px] rounded-full" : ""}`}>
                             <Ionicons name="settings-outline" size={24} color={color} />
                         </View>
                     ),

@@ -2,12 +2,14 @@ import { configureStore } from '@reduxjs/toolkit';
 import reducer from './reducer';
 import { productApi } from './product/product.query';
 import { categoryApi } from './category/category.query';
+import { reviewApi } from './review/review.query';
 
 export const store = configureStore({
     reducer: {
         ...reducer,
         [productApi.reducerPath]: productApi.reducer,
         [categoryApi.reducerPath]: categoryApi.reducer,
+        [reviewApi.reducerPath]: reviewApi.reducer
     },
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware({
@@ -15,6 +17,7 @@ export const store = configureStore({
         }).concat(
             productApi.middleware,
             categoryApi.middleware,
+            reviewApi.middleware
         ),
 });
 

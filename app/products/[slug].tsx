@@ -9,6 +9,7 @@ import Animated, { FadeIn } from 'react-native-reanimated'
 import { formatPrice } from '@/helpers/formatPrice'
 import RenderHTML from "react-native-render-html";
 import ProductList from '@/components/products/product.list'
+import ReviewList from './review.list'
 
 const { width } = Dimensions.get('window')
 
@@ -198,8 +199,8 @@ const ProductDetail = () => {
                 {/* Reviews */}
                 <View className="px-4 py-4 border-t border-gray-100 space-y-2">
                     <Text className="text-lg font-bold text-gray-800">Đánh giá & Nhận xét</Text>
-
-                    {product.totalReviews > 0 ? (
+                    <ReviewList slug={product.slug} />
+                    {/* {product.totalReviews > 0 ? (
                         <View className="bg-gray-50 p-3 rounded-lg">
                             <View className="flex-row items-center">
                                 <Image
@@ -222,7 +223,7 @@ const ProductDetail = () => {
                         <View className="bg-gray-50 p-4 rounded-lg items-center">
                             <Text className="text-gray-500">Chưa có đánh giá nào</Text>
                         </View>
-                    )}
+                    )} */}
                 </View>
 
                 {/* Related Products */}

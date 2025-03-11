@@ -11,3 +11,5 @@ export const slides: Slide[] = [
     { title: "Slide 4", image: require("../../assets/images/slide_4.png") },
     { title: "Slide 5", image: require("../../assets/images/slide_5.png") },
 ];
+
+export const size: string[] = ["S", "M", "L", "XL"];
