@@ -1,11 +1,12 @@
+import CartList from '@/components/cart'
 import React from 'react'
-import { View } from 'react-native'
+import { SafeAreaView } from 'react-native'
 
 const Cart = () => {
     return (
-        <View>
-            Cart
-        </View>
+        <SafeAreaView className="flex-1 bg-white">
+            <CartList />
+        </SafeAreaView>
     )
 }
 

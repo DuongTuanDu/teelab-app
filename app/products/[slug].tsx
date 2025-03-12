@@ -10,27 +10,21 @@ import { formatPrice } from '@/helpers/formatPrice'
 import RenderHTML from "react-native-render-html";
 import ProductList from '@/components/products/product.list'
 import ReviewList from './review.list'
-import { useAppSelector } from '@/hooks/useRedux'
+import { useAppDispatch, useAppSelector } from '@/hooks/useRedux'
 import { size } from '../const'
 import { ICart } from '@/redux/cart/cart.interface'
-import {
-    useToast,
-    Toast,
-    ToastTitle,
-    ToastDescription,
-} from "@/components/ui/toast"
+import { CartActions } from '@/redux/cart/cart.slice'
+import Toast from 'react-native-toast-message';
 
 const { width } = Dimensions.get('window')
 
 const ProductDetail = () => {
-    const toast = useToast()
+    const dispatch = useAppDispatch()
     const { averageRating, totalRate } = useAppSelector(state => state.review)
     const { slug } = useLocalSearchParams()
     const router = useRouter()
     const scrollRef = useRef<ScrollView>(null)
     const slugValue = Array.isArray(slug) ? slug[0] : slug;
-    const [quantity, setQuantity] = useState(1)
-    const [selectedVariant, setSelectedVariant] = useState(0)
     const [cartItem, setCartItem] = useState<ICart>({
         productId: "",
         name: "",
@@ -74,7 +68,12 @@ const ProductDetail = () => {
     };
 
     const handleAddToCart = () => {
-
+        dispatch(CartActions.addToCart(cartItem));
+        Toast.show({
+            type: 'success',
+            text1: product?.name,
+            text2: "Đã được thêm vào giỏ hàng 🛒",
+        });
     }
 
     const handleBuyNow = () => {
@@ -283,7 +282,10 @@ const ProductDetail = () => {
 
             {/* Bottom Action Bar */}
             <View className="flex-row px-4 py-3 border-t border-gray-200">
-                <TouchableOpacity className="w-12 h-12 items-center justify-center border border-gray-300 rounded-lg mr-3">
+                <TouchableOpacity onPress={() => {
+                    router.push('/cart')
+                }}
+                    className="w-12 h-12 items-center justify-center border border-gray-300 rounded-lg mr-3">
                     <Feather name="shopping-bag" size={22} color="#333" />
                 </TouchableOpacity>
                 <TouchableOpacity

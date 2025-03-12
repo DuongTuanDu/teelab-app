@@ -5,6 +5,7 @@ import { store } from "@/redux/store";
 import { Provider } from 'react-redux'
 import LayoutScreen from "@/components/layout";
 import ReduxSync from "@/redux/redux-sync";
+import Toast from "react-native-toast-message";
 
 export default function RootLayout() {
   const segments = useSegments() as string[];
@@ -21,6 +22,7 @@ export default function RootLayout() {
             <Stack screenOptions={{ headerShown: false }} />
           </LayoutScreen>
         )}
+        <Toast />
       </GluestackUIProvider>
     </Provider>
   );

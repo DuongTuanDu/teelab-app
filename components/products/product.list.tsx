@@ -135,7 +135,7 @@ const ProductList = (props: IProps) => {
                             contentContainerStyle={{ paddingRight: 16 }}
                         >
                             {row.map((product) => (
-                                <View key={product._id} className="mr-10" style={{ width: 150 }}>
+                                <View key={product._id} className="mr-10" style={{ width: 160 }}>
                                     <ProductItem product={product} />
                                 </View>
                             ))}
