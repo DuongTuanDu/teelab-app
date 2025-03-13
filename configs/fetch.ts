@@ -9,6 +9,7 @@ interface BaseQueryProps {
     method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
     data?: any;
     params?: any;
+    config?: any
 }
 
 const createAxiosInstance = (): AxiosInstance => {
@@ -54,13 +55,14 @@ const createAxiosInstance = (): AxiosInstance => {
 
 let axiosInstance = createAxiosInstance();
 
-export const baseQuery = async ({ url, method = 'GET', data, params }: BaseQueryProps) => {
+export const baseQuery = async ({ url, method = 'GET', data, params, config = {} }: BaseQueryProps) => {
     try {
         const response = await axiosInstance({
             url,
             method,
             data,
             params,
+            ...config
         });
 
         return { data: response };
