@@ -295,7 +295,7 @@ const ProductDetail = () => {
                     <Text className="font-bold text-blue-600">Thêm vào giỏ</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                    className="flex-1 items-center justify-center bg-blue-600 rounded-lg"
+                    className="flex-1 items-center justify-center bg-[#4f637e] rounded-lg"
                     onPress={handleBuyNow}
                 >
                     <Text className="font-bold text-white">Mua ngay</Text>

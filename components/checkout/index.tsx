@@ -228,7 +228,7 @@ const CheckoutForm = ({
                             ) : (
                                 <View className={`border rounded-lg ${!location.province.id && formik.submitCount > 0 ? 'border-red-500' : 'border-gray-300'}`}>
                                     <Picker
-                                        className='py-1 mx-1'
+                                            className='py-2 mx-1'
                                         selectedValue={location.province.id?.toString() || ''}
                                         onValueChange={(itemValue) => {
                                             if (itemValue) {
@@ -265,7 +265,7 @@ const CheckoutForm = ({
                             ) : (
                                 <View className={`border rounded-lg ${!location.district.id && formik.submitCount > 0 ? 'border-red-500' : 'border-gray-300'}`}>
                                     <Picker
-                                        className='py-1 mx-1'
+                                            className='py-2 mx-1'
                                         enabled={!!location.province.id}
                                         selectedValue={location.district.id?.toString() || ''}
                                         onValueChange={(itemValue) => {
@@ -302,7 +302,7 @@ const CheckoutForm = ({
                             ) : (
                                 <View className={`border rounded-lg ${!location.ward.id && formik.submitCount > 0 ? 'border-red-500' : 'border-gray-300'}`}>
                                     <Picker
-                                        className='py-1 mx-1'
+                                            className='py-2 mx-1'
                                         enabled={!!location.district.id}
                                         selectedValue={location.ward.id?.toString() || ''}
                                         onValueChange={(itemValue) => {
@@ -423,11 +423,11 @@ const CheckoutForm = ({
 
                         <View className="flex-row justify-between items-center py-3 border-t border-gray-100 mt-2 mb-4">
                             <Text className="text-gray-800 font-bold text-base">Tổng thanh toán:</Text>
-                            <Text className="text-blue-600 font-bold text-lg">{formatPrice(totalAmount)}đ</Text>
+                            <Text className="font-bold text-lg">{formatPrice(totalAmount)}đ</Text>
                         </View>
 
                         <TouchableOpacity
-                            className="bg-blue-600 rounded-xl flex-row justify-center items-center py-4"
+                            className="bg-[#4f637e] rounded-xl flex-row justify-center items-center py-4"
                             onPress={() => {
                                 if (!isLocationValid()) {
                                     formik.submitForm();

@@ -59,7 +59,7 @@ const TabsLayout = () => {
                 }}
             />
             <Tabs.Screen
-                name="profile"
+                name="account"
                 options={{
                     tabBarIcon: ({ color, focused }) => (
                         <View className={`items-center justify-center mt-[22px] ${focused ? "bg-black py-3 px-[13px] rounded-full" : ""}`}>
