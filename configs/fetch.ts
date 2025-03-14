@@ -1,5 +1,5 @@
 import axios, { AxiosInstance, AxiosResponse, AxiosError, InternalAxiosRequestConfig } from 'axios';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import Storage from '@/helpers/storage';
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
 const TIMEOUT = 10000;
@@ -7,7 +7,7 @@ const TIMEOUT = 10000;
 interface BaseQueryProps {
     url: string;
     method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
-    data?: any;
+    body?: any;
     params?: any;
     config?: any
 }
@@ -24,7 +24,7 @@ const createAxiosInstance = (): AxiosInstance => {
     instance.interceptors.request.use(
         async (config: InternalAxiosRequestConfig) => {
             if (config.headers) {
-                const accessToken = await AsyncStorage.getItem("ACCESS_TOKEN")
+                const accessToken = await Storage.getItem("ACCESS_TOKEN")
                 if (accessToken) {
                     config.headers['X-Customer-Header'] = `Bearer ${accessToken}`;
                 }
@@ -55,12 +55,12 @@ const createAxiosInstance = (): AxiosInstance => {
 
 let axiosInstance = createAxiosInstance();
 
-export const baseQuery = async ({ url, method = 'GET', data, params, config = {} }: BaseQueryProps) => {
+export const baseQuery = async ({ url, method = 'GET', body, params, config = {} }: BaseQueryProps) => {
     try {
         const response = await axiosInstance({
             url,
             method,
-            data,
+            data: body,
             params,
             ...config
         });
@@ -70,7 +70,7 @@ export const baseQuery = async ({ url, method = 'GET', data, params, config = {}
         return {
             error: {
                 status: error.response ? error.response.status : 'FETCH_ERROR',
-                message: error.response ? error.response.data : error.message,
+                message: error.response ? error.response.data?.message : error.message,
             },
         };
     }

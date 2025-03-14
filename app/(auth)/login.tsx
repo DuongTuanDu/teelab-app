@@ -14,6 +14,10 @@ import { Feather } from '@expo/vector-icons';
 import * as yup from 'yup';
 import { useFormik } from 'formik';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useRouter } from 'expo-router';
+import CustomButton from '@/components/custombutton';
+import { useLoginMutation } from '@/redux/auth/auth.query';
+import Toast from 'react-native-toast-message';
 
 interface ILoginFormValues {
   email: string;
@@ -34,7 +38,9 @@ const loginSchema = yup.object().shape({
 });
 
 const LoginScreen = () => {
+  const router = useRouter()
   const [securePassword, setSecurePassword] = useState<boolean>(true);
+  const [loginCustomer, { isLoading }] = useLoginMutation()
 
   const formik = useFormik<ILoginFormValues>({
     initialValues: {
@@ -43,14 +49,22 @@ const LoginScreen = () => {
       rememberMe: false,
     },
     validationSchema: loginSchema,
-    onSubmit: (values) => {
-      console.log('Login values:', values);
-
-      if (values.rememberMe) {
-        AsyncStorage.setItem('email', values.email);
-        AsyncStorage.setItem('password', values.password);
+    onSubmit: async (values) => {
+      try {
+        console.log('Login values:', values);
+        const res = await loginCustomer({ email: values.email, password: values.password }).unwrap()
+        console.log(res);
+        // if (values.rememberMe) {
+        //   AsyncStorage.setItem('email', values.email);
+        //   AsyncStorage.setItem('password', values.password);
+        // }
+      } catch (error: any) {
+        console.log(error);
+        Toast.show({
+          type: 'error',
+          text1: error?.message || "Có lỗi xảy ra khi đăng nhập"
+        })
       }
-
     },
   });
 
@@ -162,19 +176,20 @@ const LoginScreen = () => {
                 <Text className="text-gray-700">Ghi nhớ đăng nhập</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity>
+              <TouchableOpacity onPress={() => router.push('/forgot-password')}>
                 <Text className="text-blue-600 font-medium">Quên mật khẩu?</Text>
               </TouchableOpacity>
             </View>
           </View>
 
           {/* Login Button */}
-          <TouchableOpacity
-            className="bg-[#4f637e] rounded-lg py-4 items-center"
+          <CustomButton
+            variant='dark'
+            label='Đăng nhập'
             onPress={() => formik.handleSubmit()}
-          >
-            <Text className="text-white font-bold text-base">ĐĂNG NHẬP</Text>
-          </TouchableOpacity>
+            size='xl'
+            loading={isLoading}
+          />
 
           {/* Social Login */}
           {/* <View className="mt-8 items-center">
@@ -195,6 +210,7 @@ const LoginScreen = () => {
             <Text className="text-gray-600">
               Bạn chưa có tài khoản?{' '}
               <Text
+                onPress={() => router.push('/register')}
                 className="text-blue-600 font-medium"
               >
                 Đăng ký

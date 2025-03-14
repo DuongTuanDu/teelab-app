@@ -20,12 +20,17 @@ const DrawerMenu = ({
     open,
     onClose
 }: IProps) => {
+    const { isAuthenticated } = useAppSelector(state => state.auth)
     const { carts } = useAppSelector(state => state.cart)
     const { categories } = useAppSelector(state => state.category)
     const router = useRouter()
 
     const handleNavigation = (path: string) => {
-        router.push(path as RelativePathString)
+        if (path === "/account" && !isAuthenticated) {
+            router.push("/login")
+        } else {
+            router.push(path as RelativePathString)
+        }
         onClose()
     }
 
@@ -39,7 +44,7 @@ const DrawerMenu = ({
             <DrawerBackdrop />
             <DrawerContent className="bg-white">
                 <DrawerHeader className='flex items-center justify-between px-6 pb-4 border-b border-gray-100'>
-                    <Image 
+                    <Image
                         source={require('../../assets/images/logo.png')}
                         style={{ height: 50, width: 120 }}
                     />
@@ -51,23 +56,23 @@ const DrawerMenu = ({
                     <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
                         {/* Main Menu Items */}
                         <View className="px-4">
-                            <TouchableOpacity 
+                            <TouchableOpacity
                                 className="flex-row items-center py-4 px-2 border-b border-gray-100"
                                 onPress={() => handleNavigation('/')}
                             >
                                 <Feather name="home" size={22} color="#333" />
                                 <Text className="ml-3 text-lg font-medium text-gray-800">Trang chủ</Text>
                             </TouchableOpacity>
-                            
-                            <TouchableOpacity 
+
+                            <TouchableOpacity
                                 className="flex-row items-center py-4 px-2 border-b border-gray-100"
                                 onPress={() => handleNavigation('/account')}
                             >
                                 <Feather name="settings" size={22} color="#333" />
                                 <Text className="ml-3 text-lg font-medium text-gray-800">Tài khoản</Text>
                             </TouchableOpacity>
-                            
-                            <TouchableOpacity 
+
+                            <TouchableOpacity
                                 className="flex-row items-center py-4 px-2 border-b border-gray-100"
                                 onPress={() => handleNavigation('/cart')}
                             >
@@ -84,7 +89,7 @@ const DrawerMenu = ({
                             <Text className="text-lg font-bold text-gray-800 mb-2 px-2">Danh mục sản phẩm</Text>
                             {categories && categories.length > 0 ? (
                                 categories.map((category: ICategory) => (
-                                    <TouchableOpacity 
+                                    <TouchableOpacity
                                         key={category._id}
                                         className="flex-row items-center py-3 px-2 border-b border-gray-100"
                                         onPress={() => handleNavigation(`/categories/${category.slug}`)}
@@ -99,40 +104,42 @@ const DrawerMenu = ({
                                 </View>
                             )}
                         </View>
-                        
+
                         {/* Additional Menu Items */}
-                        <View className="mt-6 px-4 pb-8">
-                            <TouchableOpacity 
-                                className="flex-row items-center py-3 px-2 border-b border-gray-100"
-                                onPress={() => handleNavigation('/orders')}
-                            >
-                                <Feather name="package" size={22} color="#333" />
-                                <Text className="ml-3 text-base text-gray-800">Đơn hàng của tôi</Text>
-                            </TouchableOpacity>
-                            
-                            {/* <TouchableOpacity
+                        {
+                            isAuthenticated && <View className="mt-6 px-4 pb-8">
+                                <TouchableOpacity
+                                    className="flex-row items-center py-3 px-2 border-b border-gray-100"
+                                    onPress={() => handleNavigation('/orders')}
+                                >
+                                    <Feather name="package" size={22} color="#333" />
+                                    <Text className="ml-3 text-base text-gray-800">Đơn hàng của tôi</Text>
+                                </TouchableOpacity>
+
+                                {/* <TouchableOpacity
                                 className="flex-row items-center py-3 px-2 border-b border-gray-100"
                                 onPress={() => handleNavigation('/wishlist')}
                             >
                                 <Feather name="heart" size={22} color="#333" />
                                 <Text className="ml-3 text-base text-gray-800">Sản phẩm yêu thích</Text>
                             </TouchableOpacity> */}
-                            
-                            {/* <TouchableOpacity
+
+                                {/* <TouchableOpacity
                                 className="flex-row items-center py-3 px-2 border-b border-gray-100"
                                 onPress={() => handleNavigation('/profile')}
                             >
                                 <Feather name="user" size={22} color="#333" />
                                 <Text className="ml-3 text-base text-gray-800">Tài khoản của tôi</Text>
                             </TouchableOpacity> */}
-                            
-                            <TouchableOpacity 
-                                className="flex-row items-center py-3 px-2 mt-4 bg-gray-100 rounded-lg"
-                            >
-                                <Feather name="log-out" size={22} color="#f43f5e" />
-                                <Text className="ml-3 text-base font-medium text-red-500">Đăng xuất</Text>
-                            </TouchableOpacity>
-                        </View>
+
+                                <TouchableOpacity
+                                    className="flex-row items-center py-3 px-2 mt-4 bg-gray-100 rounded-lg"
+                                >
+                                    <Feather name="log-out" size={22} color="#f43f5e" />
+                                    <Text className="ml-3 text-base font-medium text-red-500">Đăng xuất</Text>
+                                </TouchableOpacity>
+                            </View>
+                        }
                     </ScrollView>
                 </DrawerBody>
             </DrawerContent>
