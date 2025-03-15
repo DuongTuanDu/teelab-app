@@ -1,7 +1,6 @@
-import { EvilIcons, Ionicons } from '@expo/vector-icons'
+import { Ionicons } from '@expo/vector-icons'
 import React, { useEffect, useState } from 'react'
 import { Image, View } from 'react-native'
-import { Input, InputField, InputIcon, InputSlot } from '../ui/input'
 import { useGetAllCategoryQuery } from '@/redux/category/category.query'
 import { CategoryActions } from '@/redux/category/category.slice'
 import Loading from '../loading'
@@ -11,11 +10,13 @@ import { useRouter } from 'expo-router'
 import { useSegments } from 'expo-router'
 import AuthMenu from './auth-menu'
 import { TouchableOpacity } from 'react-native'
+import { TextInput } from 'react-native'
 
 interface IProps {
     isShowSearch?: boolean
 }
 const Header = ({ isShowSearch = true }: IProps) => {
+    const [searchText, setSearchText] = useState('');
     const segments = useSegments() as string[];
     const isAuthScreen = segments.includes("login")
         || segments.includes("register")
@@ -36,6 +37,10 @@ const Header = ({ isShowSearch = true }: IProps) => {
 
     if (isLoading) return <Loading />
 
+    const handleSearch = () => {
+
+    };
+
     return (
         <View>
             <DrawerMenu
@@ -53,19 +58,24 @@ const Header = ({ isShowSearch = true }: IProps) => {
                     isAuthenticated={isAuthenticated}
                 />
             </View>
-            {
-                isShowSearch && !isAuthScreen &&
+            {isShowSearch && !isAuthScreen && (
                 <View className="px-6 pb-4">
-                    <Input className='rounded-full bg-slate-50' >
-                        <InputField placeholder="Tìm kiếm sản phẩm..." />
-                        <InputSlot>
-                            <InputIcon>
-                                <Ionicons name="search-circle" size={24} color="black" />
-                            </InputIcon>
-                        </InputSlot>
-                    </Input>
+                    <View className="flex-row items-center bg-slate-50 rounded-full px-4">
+                        <TextInput
+                            className="flex-1 py-2 px-2 text-gray-800"
+                            placeholder="Tìm kiếm sản phẩm..."
+                            placeholderTextColor="#9ca3af"
+                            value={searchText}
+                            onChangeText={setSearchText}
+                            onSubmitEditing={handleSearch}
+                            returnKeyType="search"
+                        />
+                        <TouchableOpacity className="p-2" onPress={handleSearch}>
+                            <Ionicons name="search" size={24} color="#5b636a" />
+                        </TouchableOpacity>
+                    </View>
                 </View>
-            }
+            )}
         </View>
     )
 }
