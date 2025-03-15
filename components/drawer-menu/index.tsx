@@ -1,15 +1,22 @@
-import React from 'react'
-import { Image, Text, View, TouchableOpacity, ScrollView } from 'react-native'
-import { Drawer, DrawerBackdrop, DrawerBody, DrawerContent, DrawerHeader } from '../ui/drawer'
-import { useAppDispatch, useAppSelector } from '@/hooks/useRedux'
-import { RelativePathString, useRouter } from 'expo-router'
-import { Feather, AntDesign, MaterialCommunityIcons } from '@expo/vector-icons'
-import { logout } from '@/redux/auth/auth.slice'
+import React from 'react';
+import {
+    View,
+    Text,
+    Image,
+    TouchableOpacity,
+    ScrollView,
+    Modal,
+    Pressable,
+} from 'react-native';
+import { useAppDispatch, useAppSelector } from '@/hooks/useRedux';
+import { RelativePathString, useRouter } from 'expo-router';
+import { Feather, AntDesign, MaterialCommunityIcons } from '@expo/vector-icons';
+import { logout } from '@/redux/auth/auth.slice';
 
 export interface ICategory {
     _id: number;
     name: string;
-    slug: string
+    slug: string;
 }
 
 interface IProps {
@@ -17,50 +24,55 @@ interface IProps {
     onClose: () => void;
 }
 
-const DrawerMenu = ({
-    open,
-    onClose
-}: IProps) => {
-    const dispatch = useAppDispatch()
-    const { isAuthenticated } = useAppSelector(state => state.auth)
-    const { carts } = useAppSelector(state => state.cart)
-    const { categories } = useAppSelector(state => state.category)
-    const router = useRouter()
+const DrawerMenu = ({ open, onClose }: IProps) => {
+    const dispatch = useAppDispatch();
+    const { isAuthenticated } = useAppSelector(state => state.auth);
+    const { carts = [] } = useAppSelector(state => state.cart);
+    const { categories = [] } = useAppSelector(state => state.category);
+    const router = useRouter();
 
     const handleNavigation = (path: string) => {
         if (path === "/account" && !isAuthenticated) {
-            router.push("/login")
+            router.push("/login");
         } else {
-            router.push(path as RelativePathString)
+            router.push(path as RelativePathString);
         }
-        onClose()
-    }
-
-    const handleLogout = () => {
-        dispatch(logout())
-        onClose()
-        router.push('/')
+        onClose();
     };
 
+    const handleLogout = () => {
+        dispatch(logout());
+        onClose();
+        router.push('/');
+    };
+
+    // Sử dụng Modal thay vì DrawerLayoutAndroid
     return (
-        <Drawer
-            isOpen={open}
-            onClose={onClose}
-            size="lg"
-            anchor="left"
+        <Modal
+            visible={open}
+            animationType="slide"
+            transparent={true}
+            onRequestClose={onClose}
         >
-            <DrawerBackdrop />
-            <DrawerContent className="bg-white">
-                <DrawerHeader className='flex items-center justify-between px-6 pb-4 border-b border-gray-100'>
-                    <Image
-                        source={require('../../assets/images/logo.png')}
-                        style={{ height: 50, width: 120 }}
-                    />
-                    <TouchableOpacity onPress={onClose} className="p-2">
-                        <AntDesign name="close" size={24} color="#333" />
-                    </TouchableOpacity>
-                </DrawerHeader>
-                <DrawerBody className="p-0">
+            <View className="flex-1 flex-row">
+                {/* Overlay to close drawer */}
+                <Pressable
+                    onPress={onClose}
+                    className="absolute top-0 bottom-0 left-0 right-0 bg-black opacity-50"
+                />
+
+                {/* Drawer content */}
+                <View className="bg-white w-[280px] h-full">
+                    <View className="flex-row items-center justify-between px-6 pb-4 border-b border-gray-100">
+                        <Image
+                            source={require('../../assets/images/logo.png')}
+                            style={{ height: 50, width: 120 }}
+                        />
+                        <TouchableOpacity onPress={onClose} className="p-2">
+                            <AntDesign name="close" size={24} color="#333" />
+                        </TouchableOpacity>
+                    </View>
+
                     <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
                         {/* Main Menu Items */}
                         <View className="px-4">
@@ -114,8 +126,8 @@ const DrawerMenu = ({
                         </View>
 
                         {/* Additional Menu Items */}
-                        {
-                            isAuthenticated && <View className="mt-6 px-4 pb-8">
+                        {isAuthenticated && (
+                            <View className="mt-6 px-4 pb-8">
                                 <TouchableOpacity
                                     className="flex-row items-center py-3 px-2 border-b border-gray-100"
                                     onPress={() => handleNavigation('/orders')}
@@ -123,22 +135,6 @@ const DrawerMenu = ({
                                     <Feather name="package" size={22} color="#333" />
                                     <Text className="ml-3 text-base text-gray-800">Đơn hàng của tôi</Text>
                                 </TouchableOpacity>
-
-                                {/* <TouchableOpacity
-                                className="flex-row items-center py-3 px-2 border-b border-gray-100"
-                                onPress={() => handleNavigation('/wishlist')}
-                            >
-                                <Feather name="heart" size={22} color="#333" />
-                                <Text className="ml-3 text-base text-gray-800">Sản phẩm yêu thích</Text>
-                            </TouchableOpacity> */}
-
-                                {/* <TouchableOpacity
-                                className="flex-row items-center py-3 px-2 border-b border-gray-100"
-                                onPress={() => handleNavigation('/profile')}
-                            >
-                                <Feather name="user" size={22} color="#333" />
-                                <Text className="ml-3 text-base text-gray-800">Tài khoản của tôi</Text>
-                            </TouchableOpacity> */}
 
                                 <TouchableOpacity
                                     onPress={handleLogout}
@@ -148,12 +144,12 @@ const DrawerMenu = ({
                                     <Text className="ml-3 text-base font-medium text-red-500">Đăng xuất</Text>
                                 </TouchableOpacity>
                             </View>
-                        }
+                        )}
                     </ScrollView>
-                </DrawerBody>
-            </DrawerContent>
-        </Drawer>
-    )
-}
+                </View>
+            </View>
+        </Modal>
+    );
+};
 
-export default DrawerMenu
+export default DrawerMenu;

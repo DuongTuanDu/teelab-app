@@ -4,8 +4,8 @@ import Header from '../header';
 import Storage from '@/helpers/storage';
 import { useGetAccountQuery } from '@/redux/auth/auth.query';
 import Loading from '../loading';
-import { useAppDispatch, useAppSelector } from '@/hooks/useRedux';
-import { AuthActions } from '@/redux/auth/auth.slice';
+import { useAppDispatch } from '@/hooks/useRedux';
+import { AuthActions, getAccount } from '@/redux/auth/auth.slice';
 import { authEmitter } from '@/helpers/authEmitter';
 
 interface LayoutProps {
@@ -29,6 +29,7 @@ const LayoutScreen = ({ children }: LayoutProps) => {
 
         const tokenListener = (newToken: string) => {
             setToken(newToken);
+            dispatch(getAccount());
         };
         authEmitter.on('tokenChanged', tokenListener);
 

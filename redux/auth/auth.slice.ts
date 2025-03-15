@@ -1,6 +1,7 @@
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { IAuthState, ICustomer } from "./auth.interface";
 import Storage from "@/helpers/storage";
+import axiosInstance from "@/configs/fetch";
 
 const initialState: IAuthState = {
     customer: null,
@@ -16,6 +17,15 @@ export const logout = createAsyncThunk(
         await Storage.removeItem("ACCESS_TOKEN");
     }
 );
+
+export const getAccount = createAsyncThunk<ICustomer>(
+    "auth/account",
+    async () => {
+        const response = await axiosInstance.get("/account");
+        return response.data;
+    }
+);
+
 
 export const authSlice = createSlice({
     name: "auth",
@@ -44,9 +54,23 @@ export const authSlice = createSlice({
                 state.authLoading = false;
                 state.customer = null;
             })
+
+            .addCase(getAccount.pending, (state, action) => {
+                state.authLoading = true;
+            })
+            .addCase(getAccount.fulfilled, (state, action: PayloadAction<ICustomer>) => {
+                if (action.payload._id) {
+                    state.authLoading = false;
+                    state.customer = action.payload;
+                    state.isAuthenticated = true;
+                }
+            })
+            .addCase(getAccount.rejected, (state, action) => {
+                state.authLoading = false;
+            })
     }
 })
 
-export const AuthActions = { ...authSlice.actions, logout };
+export const AuthActions = { ...authSlice.actions, logout, getAccount };
 const authReducer = authSlice.reducer;
 export default authReducer;

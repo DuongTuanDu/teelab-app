@@ -20,6 +20,8 @@ import { useLoginMutation } from '@/redux/auth/auth.query';
 import Toast from 'react-native-toast-message';
 import Storage from '@/helpers/storage';
 import { authEmitter } from '@/helpers/authEmitter';
+import { useAppDispatch } from '@/hooks/useRedux';
+import { AuthActions } from '@/redux/auth/auth.slice';
 
 interface ILoginFormValues {
   email: string;
@@ -40,8 +42,10 @@ const loginSchema = yup.object().shape({
 });
 
 const LoginScreen = () => {
+  const dispatch = useAppDispatch();
   const router = useRouter()
   const [securePassword, setSecurePassword] = useState<boolean>(true);
+  const [isLoaded, setIsLoaded] = useState<boolean>(false);
   const [loginCustomer, { isLoading, error }] = useLoginMutation()
 
   if (error) {
@@ -61,8 +65,8 @@ const LoginScreen = () => {
     onSubmit: async (values) => {
       const res = await loginCustomer({ email: values.email, password: values.password }).unwrap()
       if (res.success) {
-        authEmitter.emit('tokenChanged', res.accessToken);
         await Storage.setItem("ACCESS_TOKEN", res.accessToken);
+        authEmitter.emit('tokenChanged', res.accessToken);
 
         if (values.rememberMe) {
           await Promise.all([
@@ -74,7 +78,7 @@ const LoginScreen = () => {
           type: "success",
           text1: "Đăng nhập thành công"
         })
-        router.push("/")
+        router.replace("/")
       }
     },
   });
@@ -97,11 +101,15 @@ const LoginScreen = () => {
         }
       } catch (error) {
         console.error('Failed to load credentials', error);
+      } finally {
+        setIsLoaded(true);
       }
     };
 
-    loadSavedCredentials();
-  }, []);
+    if (!isLoaded) {
+      loadSavedCredentials();
+    }
+  }, [isLoaded]);
 
   return (
     <SafeAreaView className="flex-1 bg-white">

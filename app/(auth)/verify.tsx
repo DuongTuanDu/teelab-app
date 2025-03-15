@@ -18,6 +18,7 @@ import { useSendOtpMutation, useVerifyOtpMutation } from '@/redux/auth/auth.quer
 import CustomButton from '@/components/custombutton';
 import { useRouter } from 'expo-router';
 import { AuthActions } from '@/redux/auth/auth.slice';
+import { Redirect } from 'expo-router';
 
 const VerifyOTPScreen = () => {
     const router = useRouter()
@@ -30,13 +31,11 @@ const VerifyOTPScreen = () => {
     const [verify, { isLoading, error: errorVerify }] = useVerifyOtpMutation();
     const [sendOtp, { error: errorSendOtp }] = useSendOtpMutation()
 
-    if (!emailVerify) {
-        if (!isAuthenticated) {
-            router.push('/login')
-        } else {
-            router.push('/')
+    useEffect(() => {
+        if (!emailVerify) {
+            <Redirect href={isAuthenticated ? '/' : '/login'} />
         }
-    }
+    }, [emailVerify, isAuthenticated]);
 
     if (errorVerify) {
         Toast.show({

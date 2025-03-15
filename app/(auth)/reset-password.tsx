@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     View,
     Text,
@@ -18,6 +18,7 @@ import { useResetPasswordMutation } from '@/redux/auth/auth.query';
 import Toast from 'react-native-toast-message';
 import CustomButton from '@/components/custombutton';
 import { AuthActions } from '@/redux/auth/auth.slice';
+import { Redirect } from 'expo-router';
 
 const resetPasswordSchema = yup.object().shape({
     password: yup
@@ -42,13 +43,15 @@ const ResetPasswordScreen = () => {
     const { emailVerify, isAuthenticated, isResetPassword } = useAppSelector(state => state.auth);
     const [resetPassword, { isLoading, error }] = useResetPasswordMutation()
 
-    if (!emailVerify || !isResetPassword) {
-        if (!isAuthenticated) {
-            router.push('/login')
-        } else {
-            router.push('/')
+    useEffect(() => {
+        if (!emailVerify || !isResetPassword) {
+            if (!isAuthenticated) {
+                <Redirect href="/login" />
+            } else {
+                <Redirect href="/" />
+            }
         }
-    }
+    }, [emailVerify, isResetPassword, isAuthenticated]);
 
     if (error) {
         Toast.show({
@@ -76,7 +79,7 @@ const ResetPasswordScreen = () => {
                 })
                 dispatch(AuthActions.setEmailVerify(""))
                 dispatch(AuthActions.setIsResetPassword(false))
-                router.push("/login")
+                router.replace("/login")
             }
         },
     });
