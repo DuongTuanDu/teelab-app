@@ -14,7 +14,9 @@ export interface ICustomer {
 export interface IAuthState {
     customer: ICustomer | null,
     isAuthenticated: boolean,
-    authLoading: boolean
+    authLoading: boolean,
+    emailVerify: string,
+    isResetPassword: boolean
 }
 
 export interface ILogin {

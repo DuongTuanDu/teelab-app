@@ -13,7 +13,11 @@ import { Feather } from '@expo/vector-icons';
 import * as yup from 'yup';
 import { useFormik } from 'formik';
 import { useAppDispatch } from '@/hooks/useRedux';
-// import { setEmailVerify } from '@/redux/auth/auth.slice';
+import { useRouter } from 'expo-router';
+import CustomButton from '@/components/custombutton';
+import { useSendOtpMutation } from '@/redux/auth/auth.query';
+import Toast from 'react-native-toast-message';
+import { AuthActions } from '@/redux/auth/auth.slice';
 
 interface ForgotPasswordFormValues {
     email: string;
@@ -27,17 +31,33 @@ const forgotPasswordSchema = yup.object().shape({
 });
 
 const ForgotPasswordScreen = () => {
+    const router = useRouter()
     const dispatch = useAppDispatch();
+    const [sendOtp, { isLoading, error }] = useSendOtpMutation()
+
+    if (error) {
+        Toast.show({
+            type: "error",
+            text1: error?.message || "Có lỗi xảy ra khi gửi mã"
+        })
+    }
 
     const formik = useFormik<ForgotPasswordFormValues>({
         initialValues: {
             email: '',
         },
         validationSchema: forgotPasswordSchema,
-        onSubmit: (values) => {
-            // Xử lý gửi OTP ở đây
-            console.log('Send OTP to:', values.email);
-            //dispatch(setEmailVerify(values.email));
+        onSubmit: async (values) => {
+            const res = await sendOtp({ email: values.email }).unwrap()
+            if (res.success) {
+                Toast.show({
+                    type: "success",
+                    text1: res.message
+                })
+            }
+            dispatch(AuthActions.setEmailVerify(values.email))
+            dispatch(AuthActions.setIsResetPassword(true))
+            router.push('/verify')
         },
     });
 
@@ -49,6 +69,7 @@ const ForgotPasswordScreen = () => {
             >
                 <View className="px-5 pt-4 mb-4 flex-row items-center">
                     <TouchableOpacity
+                        onPress={() => router.back()}
                         className="p-2 rounded-full bg-gray-100"
                     >
                         <Feather name="arrow-left" size={20} color="#374151" />
@@ -87,15 +108,16 @@ const ForgotPasswordScreen = () => {
                     </View>
 
                     {/* Submit Button */}
-                    <TouchableOpacity
-                        className="bg-[#4f637e] rounded-lg py-4 items-center"
-                    >
-                        <Text className="text-white font-bold text-base">GỬI MÃ XÁC THỰC</Text>
-                    </TouchableOpacity>
-
+                    <CustomButton
+                        label="GỬI MÃ XÁC THỰC"
+                        loading={isLoading}
+                        size="xl"
+                        variant="dark"
+                        onPress={() => formik.handleSubmit()}
+                    />
                     {/* Login Link */}
                     <View className="mt-8 items-center">
-                        <TouchableOpacity >
+                        <TouchableOpacity onPress={() => router.push('/login')}>
                             <Text className="text-blue-600 font-medium">Quay lại đăng nhập</Text>
                         </TouchableOpacity>
                     </View>

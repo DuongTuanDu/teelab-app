@@ -1,6 +1,5 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { baseQuery } from "@/configs/fetch";
-import { IResponseWithData } from "@/configs/base.interface";
 import { ICustomer, ILogin } from "./auth.interface";
 
 export const authApi = createApi({
@@ -10,7 +9,7 @@ export const authApi = createApi({
         return baseQuery({ url, method, body, params });
     },
     endpoints: (builder) => ({
-        getAccount: builder.query<IResponseWithData<ICustomer>, void>({
+        getAccount: builder.query<ICustomer, void>({
             query: () => ({
                 url: `/account`,
                 method: "GET",
@@ -24,37 +23,33 @@ export const authApi = createApi({
                 method: "POST",
             }),
         }),
-        register: builder.mutation<IResponseWithData<{ message: string }>, { name: string, email: string, password: string }>({
+        register: builder.mutation<{ success: boolean, message: string }, { name: string, email: string, password: string }>({
             query: ({ email, password, name }) => ({
                 url: `/register`,
                 body: { email, password, name },
                 method: "POST",
             }),
-            transformResponse: (response) => response.data
         }),
-        sendOtp: builder.mutation<IResponseWithData<{ message: string }>, { email: string }>({
+        sendOtp: builder.mutation<{ success: boolean, message: string }, { email: string }>({
             query: ({ email }) => ({
                 url: `/send-otp`,
                 body: { email },
                 method: "POST",
             }),
-            transformResponse: (response) => response.data
         }),
-        verifyOtp: builder.mutation<IResponseWithData<{ message: string }>, { email: string, otp: string }>({
+        verifyOtp: builder.mutation<{ success: boolean, message: string }, { email: string, otp: string }>({
             query: ({ email, otp }) => ({
                 url: `/verify-otp`,
                 body: { email, otp },
                 method: "POST",
             }),
-            transformResponse: (response) => response.data
         }),
-        resetPassword: builder.mutation<IResponseWithData<{ message: string }>, { email: string }>({
-            query: ({ email }) => ({
+        resetPassword: builder.mutation<{ success: boolean, message: string }, { email: string, password: string }>({
+            query: ({ email, password }) => ({
                 url: `/reset-password`,
-                body: { email },
+                body: { email, password },
                 method: "POST",
             }),
-            transformResponse: (response) => response.data
         }),
     })
 });

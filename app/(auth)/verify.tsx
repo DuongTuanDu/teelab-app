@@ -7,21 +7,50 @@ import {
     ScrollView,
     KeyboardAvoidingView,
     Platform,
-    Alert,
     NativeSyntheticEvent,
     TextInputKeyPressEventData,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { useAppSelector, useAppDispatch } from '@/hooks/useRedux';
+import Toast from 'react-native-toast-message';
+import { useSendOtpMutation, useVerifyOtpMutation } from '@/redux/auth/auth.query';
+import CustomButton from '@/components/custombutton';
+import { useRouter } from 'expo-router';
+import { AuthActions } from '@/redux/auth/auth.slice';
 
 const VerifyOTPScreen = () => {
+    const router = useRouter()
     const [otp, setOtp] = useState<string[]>(['', '', '', '', '', '']);
     const inputRefs = useRef<Array<TextInput | null>>([]);
     const [countdown, setCountdown] = useState<number>(300);
     const [canResend, setCanResend] = useState<boolean>(false);
     const dispatch = useAppDispatch();
-    //   const { emailVerify } = useAppSelector(state => state.auth);
+    const { emailVerify, isAuthenticated, isResetPassword } = useAppSelector(state => state.auth);
+    const [verify, { isLoading, error: errorVerify }] = useVerifyOtpMutation();
+    const [sendOtp, { error: errorSendOtp }] = useSendOtpMutation()
+
+    if (!emailVerify) {
+        if (!isAuthenticated) {
+            router.push('/login')
+        } else {
+            router.push('/')
+        }
+    }
+
+    if (errorVerify) {
+        Toast.show({
+            type: "error",
+            text1: errorVerify?.message || "Có lỗi xảy ra khi xác thực"
+        })
+    }
+
+    if (errorSendOtp) {
+        Toast.show({
+            type: "error",
+            text1: errorSendOtp?.message || "Có lỗi xảy ra khi gửi mã"
+        })
+    }
 
     useEffect(() => {
         inputRefs.current = inputRefs.current.slice(0, 6);
@@ -80,40 +109,41 @@ const VerifyOTPScreen = () => {
         }
     };
 
-    const handlePaste = (text: string): void => {
-        // Handle paste event
-        if (text.length === 6 && !isNaN(Number(text))) {
-            const otpArray = text.split('');
-            setOtp(otpArray);
-            inputRefs.current[5]?.focus();
-        }
-    };
-
-    const handleSubmit = (): void => {
+    const handleSubmit = async () => {
         const otpValue = otp.join('');
         if (otpValue.length !== 6) {
-            Alert.alert('Lỗi', 'Vui lòng nhập đủ 6 số OTP');
+            Toast.show({
+                type: "error",
+                text1: "Vui lòng nhập đủ 6 số OTP"
+            })
             return;
         }
 
-        console.log('OTP submitted:', otpValue);
-
-        // Navigate based on verification purpose
-        // if (isReset) {
-        //   navigation.navigate('ResetPassword');
-        // } else {
-        //   navigation.navigate('Login');
-        // }
+        const res = await verify({ email: emailVerify, otp: otpValue }).unwrap()
+        if (res.success) {
+            Toast.show({
+                type: "success",
+                text1: res.message
+            })
+            if (isResetPassword) {
+                router.push("/reset-password")
+            } else {
+                dispatch(AuthActions.setEmailVerify(""))
+                router.push("/login")
+            }
+        }
     };
 
-    const handleResend = (): void => {
+    const handleResend = async () => {
         if (!canResend) return;
-
-        // console.log('Resend OTP to:', emailVerify);
         startCountdown();
-
-        // Call API to resend OTP here
-        // dispatch(sendOTP({ email: emailVerify }))
+        const res = await sendOtp({ email: emailVerify }).unwrap()
+        if (res.success) {
+            Toast.show({
+                type: "success",
+                text1: res.message
+            })
+        }
     };
 
     return (
@@ -124,6 +154,7 @@ const VerifyOTPScreen = () => {
             >
                 <View className="px-5 pt-4 mb-4 flex-row items-center">
                     <TouchableOpacity
+                        onPress={() => router.back()}
                         className="p-2 rounded-full bg-gray-100"
                     >
                         <Feather name="arrow-left" size={20} color="#374151" />
@@ -138,9 +169,9 @@ const VerifyOTPScreen = () => {
                             Chúng tôi đã gửi mã OTP đến email của bạn.
                             Vui lòng nhập mã để xác thực tài khoản.
                         </Text>
-                        {/* {emailVerify && (
-              <Text className="text-blue-600 font-medium mt-2">{emailVerify}</Text>
-            )} */}
+                        {emailVerify && (
+                            <Text className="text-blue-600 font-medium mt-2">{emailVerify}</Text>
+                        )}
                     </View>
 
                     {/* OTP Input */}
@@ -162,26 +193,25 @@ const VerifyOTPScreen = () => {
                         </View>
 
                         <View className="flex-row justify-center">
-                            <Text className="text-gray-500">
-                                Chưa nhận được mã? {' '}
-                                {canResend ? (
-                                    <TouchableOpacity onPress={handleResend}>
-                                        <Text className="text-blue-600 font-medium">Gửi lại</Text>
-                                    </TouchableOpacity>
-                                ) : (
-                                    <Text>Gửi lại sau {countdown}s</Text>
-                                )}
-                            </Text>
+                            <Text className="text-gray-500">Chưa nhận được mã? </Text>
+                            {canResend ? (
+                                <TouchableOpacity onPress={handleResend}>
+                                    <Text className="text-blue-600 font-medium">Gửi lại</Text>
+                                </TouchableOpacity>
+                            ) : (
+                                <Text className="text-gray-500">Gửi lại sau {countdown}s</Text>
+                            )}
                         </View>
                     </View>
 
                     {/* Submit Button */}
-                    <TouchableOpacity
-                        className="bg-[#4f637e] rounded-lg py-4 items-center"
+                    <CustomButton
+                        label="XÁC THỰC"
+                        loading={isLoading}
+                        size="xl"
+                        variant="dark"
                         onPress={handleSubmit}
-                    >
-                        <Text className="text-white font-bold text-base">XÁC THỰC</Text>
-                    </TouchableOpacity>
+                    />
                 </ScrollView>
             </KeyboardAvoidingView>
         </SafeAreaView>

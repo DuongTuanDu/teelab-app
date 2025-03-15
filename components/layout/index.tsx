@@ -4,8 +4,9 @@ import Header from '../header';
 import Storage from '@/helpers/storage';
 import { useGetAccountQuery } from '@/redux/auth/auth.query';
 import Loading from '../loading';
-import { useAppDispatch } from '@/hooks/useRedux';
+import { useAppDispatch, useAppSelector } from '@/hooks/useRedux';
 import { AuthActions } from '@/redux/auth/auth.slice';
+import { authEmitter } from '@/helpers/authEmitter';
 
 interface LayoutProps {
     children: React.ReactNode;
@@ -14,34 +15,44 @@ interface LayoutProps {
 const LayoutScreen = ({ children }: LayoutProps) => {
     const [token, setToken] = useState<string | null>(null);
     const dispatch = useAppDispatch();
-    
-    useEffect(() => {
-        const fetchToken = async () => {
-            const accessToken = await Storage.getItem<string | null>("ACCESS_TOKEN");
-            setToken(accessToken);
-        };
-        fetchToken();
-    }, []);
 
     const { data, isLoading } = useGetAccountQuery(undefined, {
         skip: !token
     })
 
     useEffect(() => {
+        const fetchToken = async () => {
+            const accessToken = await Storage.getItem<string | null>("ACCESS_TOKEN");
+            setToken(accessToken);
+        };
+        fetchToken();
+
+        const tokenListener = (newToken: string) => {
+            setToken(newToken);
+        };
+        authEmitter.on('tokenChanged', tokenListener);
+
+        return () => {
+            authEmitter.off('tokenChanged', tokenListener);
+        };
+    }, []);
+
+    useEffect(() => {
         dispatch(AuthActions.setAuthLoading(isLoading))
     }, [isLoading])
 
     useEffect(() => {
-        if (data?.data) {
-            dispatch(AuthActions.setCustomer(data.data))
+        if (data?._id) {
+            dispatch(AuthActions.setCustomer(data))
             dispatch(AuthActions.setIsAuthenticated(true))
         }
-    }, [data?.data])
+    }, [data?._id])
 
     if (isLoading) return <Loading />
 
     return (
         <KeyboardAvoidingView
+            key={token}
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
             style={{ flex: 1 }}
         >

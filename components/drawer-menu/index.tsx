@@ -1,9 +1,10 @@
 import React from 'react'
 import { Image, Text, View, TouchableOpacity, ScrollView } from 'react-native'
 import { Drawer, DrawerBackdrop, DrawerBody, DrawerContent, DrawerHeader } from '../ui/drawer'
-import { useAppSelector } from '@/hooks/useRedux'
+import { useAppDispatch, useAppSelector } from '@/hooks/useRedux'
 import { RelativePathString, useRouter } from 'expo-router'
 import { Feather, AntDesign, MaterialCommunityIcons } from '@expo/vector-icons'
+import { logout } from '@/redux/auth/auth.slice'
 
 export interface ICategory {
     _id: number;
@@ -20,6 +21,7 @@ const DrawerMenu = ({
     open,
     onClose
 }: IProps) => {
+    const dispatch = useAppDispatch()
     const { isAuthenticated } = useAppSelector(state => state.auth)
     const { carts } = useAppSelector(state => state.cart)
     const { categories } = useAppSelector(state => state.category)
@@ -33,6 +35,12 @@ const DrawerMenu = ({
         }
         onClose()
     }
+
+    const handleLogout = () => {
+        dispatch(logout())
+        onClose()
+        router.push('/')
+    };
 
     return (
         <Drawer
@@ -133,6 +141,7 @@ const DrawerMenu = ({
                             </TouchableOpacity> */}
 
                                 <TouchableOpacity
+                                    onPress={handleLogout}
                                     className="flex-row items-center py-3 px-2 mt-4 bg-gray-100 rounded-lg"
                                 >
                                     <Feather name="log-out" size={22} color="#f43f5e" />

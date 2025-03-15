@@ -7,18 +7,26 @@ import {
     ScrollView,
     KeyboardAvoidingView,
     Platform,
-    Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import * as yup from 'yup';
 import { useFormik } from 'formik';
-import { useAppSelector } from '@/hooks/useRedux';
+import { useAppDispatch, useAppSelector } from '@/hooks/useRedux';
+import { useRouter } from 'expo-router';
+import { useResetPasswordMutation } from '@/redux/auth/auth.query';
+import Toast from 'react-native-toast-message';
+import CustomButton from '@/components/custombutton';
+import { AuthActions } from '@/redux/auth/auth.slice';
 
 const resetPasswordSchema = yup.object().shape({
     password: yup
         .string()
         .min(6, 'Mật khẩu phải có ít nhất 6 ký tự')
+        .matches(
+            /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/,
+            'Mật khẩu phải chứa ít nhất 1 chữ hoa, 1 chữ thường, 1 số và 1 ký tự đặc biệt'
+        )
         .required('Vui lòng nhập mật khẩu mới'),
     rePassword: yup
         .string()
@@ -27,8 +35,27 @@ const resetPasswordSchema = yup.object().shape({
 });
 
 const ResetPasswordScreen = () => {
+    const dispatch = useAppDispatch()
+    const router = useRouter()
     const [securePassword, setSecurePassword] = useState<boolean>(true);
     const [secureRePassword, setSecureRePassword] = useState<boolean>(true);
+    const { emailVerify, isAuthenticated, isResetPassword } = useAppSelector(state => state.auth);
+    const [resetPassword, { isLoading, error }] = useResetPasswordMutation()
+
+    if (!emailVerify || !isResetPassword) {
+        if (!isAuthenticated) {
+            router.push('/login')
+        } else {
+            router.push('/')
+        }
+    }
+
+    if (error) {
+        Toast.show({
+            type: "error",
+            text1: error?.message || "Có lỗi xảy ra khi tạo mới mật khẩu"
+        })
+    }
 
     const formik = useFormik({
         initialValues: {
@@ -36,9 +63,21 @@ const ResetPasswordScreen = () => {
             rePassword: '',
         },
         validationSchema: resetPasswordSchema,
-        onSubmit: (values) => {
+        onSubmit: async (values) => {
+            const res = await resetPassword({
+                email: emailVerify,
+                password: values.password,
+            }).unwrap();
 
-
+            if (res.success) {
+                Toast.show({
+                    type: "success",
+                    text1: res.message
+                })
+                dispatch(AuthActions.setEmailVerify(""))
+                dispatch(AuthActions.setIsResetPassword(false))
+                router.push("/login")
+            }
         },
     });
 
@@ -131,13 +170,13 @@ const ResetPasswordScreen = () => {
                     </View>
 
                     {/* Submit Button */}
-                    <TouchableOpacity
-                        className="bg-[#4f637e] rounded-lg py-4 items-center"
+                    <CustomButton
+                        label="ĐẶT LẠI MẬT KHẨU"
+                        loading={isLoading}
+                        size="xl"
+                        variant="dark"
                         onPress={() => formik.handleSubmit()}
-                    >
-                        <Text className="text-white font-bold text-base">ĐẶT LẠI MẬT KHẨU</Text>
-                    </TouchableOpacity>
-
+                    />
                     {/* Login Link */}
                     <View className="mt-8 items-center">
                         <TouchableOpacity>

@@ -3,11 +3,15 @@ import React, { useState } from 'react'
 import { Image, View, Text, TouchableOpacity, Modal, Pressable } from 'react-native'
 import { useRouter } from 'expo-router'
 import { RelativePathString } from 'expo-router';
+import { useAppDispatch, useAppSelector } from '@/hooks/useRedux';
+import { logout } from '@/redux/auth/auth.slice';
 
 
 const AuthMenu = ({ isAuthenticated }: { isAuthenticated: boolean }) => {
+    const dispatch = useAppDispatch()
     const router = useRouter()
-    const [isOpen, setIsOpen] = useState(false);
+    const { customer } = useAppSelector(state => state.auth)
+    const [isOpen, setIsOpen] = useState<boolean>(false);
 
     const toggleDropdown = () => {
         setIsOpen(!isOpen);
@@ -20,7 +24,9 @@ const AuthMenu = ({ isAuthenticated }: { isAuthenticated: boolean }) => {
     };
 
     const handleLogout = () => {
+        dispatch(logout())
         setIsOpen(false);
+        router.push('/')
     };
 
     return (
@@ -33,7 +39,7 @@ const AuthMenu = ({ isAuthenticated }: { isAuthenticated: boolean }) => {
                     <EvilIcons name="user" size={40} color="#374151" />
                 ) : (
                     <Image
-                        source={{ uri: "https://avatar.iran.liara.run/public" }}
+                            source={{ uri: customer?.avatar?.url }}
                         className="h-10 w-10 rounded-full"
                     />
                 )}

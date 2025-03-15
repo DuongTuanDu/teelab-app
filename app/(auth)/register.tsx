@@ -12,6 +12,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import * as yup from 'yup';
 import { useFormik } from 'formik';
+import { useRouter } from 'expo-router';
+import { useAppDispatch } from '@/hooks/useRedux';
+import { useReducedMotion } from 'react-native-reanimated';
+import { useRegisterMutation } from '@/redux/auth/auth.query';
+import Toast from 'react-native-toast-message';
+import CustomButton from '@/components/custombutton';
+import { AuthActions } from '@/redux/auth/auth.slice';
 
 interface RegisterFormValues {
   name: string;
@@ -21,7 +28,10 @@ interface RegisterFormValues {
 }
 
 const registerSchema = yup.object().shape({
-  name: yup.string().required('Vui lòng nhập họ tên'),
+  name: yup
+    .string()
+    .min(2, 'Tên phải có ít nhất 2 ký tự')
+    .required('Vui lòng nhập họ tên'),
   email: yup
     .string()
     .email('Email không hợp lệ')
@@ -29,6 +39,10 @@ const registerSchema = yup.object().shape({
   password: yup
     .string()
     .min(6, 'Mật khẩu phải có ít nhất 6 ký tự')
+    .matches(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/,
+      'Mật khẩu phải chứa ít nhất 1 chữ hoa, 1 chữ thường, 1 số và 1 ký tự đặc biệt'
+    )
     .required('Vui lòng nhập mật khẩu'),
   rePassword: yup
     .string()
@@ -37,8 +51,18 @@ const registerSchema = yup.object().shape({
 });
 
 const RegisterScreen = () => {
+  const dispatch = useAppDispatch()
+  const router = useRouter()
   const [securePassword, setSecurePassword] = useState<boolean>(true);
   const [secureRePassword, setSecureRePassword] = useState<boolean>(true);
+  const [registerCustomer, { isLoading, error }] = useRegisterMutation()
+
+  if (error) {
+    Toast.show({
+      type: "error",
+      text1: error?.message || "Có lỗi xảy ra khi đăng ký"
+    })
+  }
 
   const formik = useFormik<RegisterFormValues>({
     initialValues: {
@@ -48,9 +72,21 @@ const RegisterScreen = () => {
       rePassword: '',
     },
     validationSchema: registerSchema,
-    onSubmit: (values) => {
+    onSubmit: async (values) => {
+      const res = await registerCustomer({
+        email: values.email,
+        password: values.password,
+        name: values.name
+      }).unwrap();
 
-
+      if (res.success) {
+        Toast.show({
+          type: "success",
+          text1: res.message
+        })
+        dispatch(AuthActions.setEmailVerify(values.email))
+        router.push('/verify')
+      }
     },
   });
 
@@ -169,18 +205,19 @@ const RegisterScreen = () => {
           </View>
 
           {/* Register Button */}
-          <TouchableOpacity
-            className="bg-[#4f637e] rounded-lg py-4 items-center"
+          <CustomButton
+            label='Đăng ký'
+            size="xl"
+            loading={isLoading}
             onPress={() => formik.handleSubmit()}
-          >
-            <Text className="text-white font-bold text-base">ĐĂNG KÝ</Text>
-          </TouchableOpacity>
-
+            variant='dark'
+          />
           {/* Login Link */}
           <View className="mt-8 mb-8 items-center">
             <Text className="text-gray-600">
               Đã có tài khoản?{' '}
               <Text
+                onPress={() => router.push('/login')}
                 className="text-blue-600 font-medium"
               >
                 Đăng nhập

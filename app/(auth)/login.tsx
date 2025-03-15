@@ -18,6 +18,8 @@ import { useRouter } from 'expo-router';
 import CustomButton from '@/components/custombutton';
 import { useLoginMutation } from '@/redux/auth/auth.query';
 import Toast from 'react-native-toast-message';
+import Storage from '@/helpers/storage';
+import { authEmitter } from '@/helpers/authEmitter';
 
 interface ILoginFormValues {
   email: string;
@@ -40,7 +42,14 @@ const loginSchema = yup.object().shape({
 const LoginScreen = () => {
   const router = useRouter()
   const [securePassword, setSecurePassword] = useState<boolean>(true);
-  const [loginCustomer, { isLoading }] = useLoginMutation()
+  const [loginCustomer, { isLoading, error }] = useLoginMutation()
+
+  if (error) {
+    Toast.show({
+      type: 'error',
+      text1: error?.message || "Có lỗi xảy ra khi đăng nhập"
+    })
+  }
 
   const formik = useFormik<ILoginFormValues>({
     initialValues: {
@@ -50,20 +59,22 @@ const LoginScreen = () => {
     },
     validationSchema: loginSchema,
     onSubmit: async (values) => {
-      try {
-        console.log('Login values:', values);
-        const res = await loginCustomer({ email: values.email, password: values.password }).unwrap()
-        console.log(res);
-        // if (values.rememberMe) {
-        //   AsyncStorage.setItem('email', values.email);
-        //   AsyncStorage.setItem('password', values.password);
-        // }
-      } catch (error: any) {
-        console.log(error);
+      const res = await loginCustomer({ email: values.email, password: values.password }).unwrap()
+      if (res.success) {
+        authEmitter.emit('tokenChanged', res.accessToken);
+        await Storage.setItem("ACCESS_TOKEN", res.accessToken);
+
+        if (values.rememberMe) {
+          await Promise.all([
+            AsyncStorage.setItem('email', values.email),
+            AsyncStorage.setItem('password', values.password)
+          ])
+        }
         Toast.show({
-          type: 'error',
-          text1: error?.message || "Có lỗi xảy ra khi đăng nhập"
+          type: "success",
+          text1: "Đăng nhập thành công"
         })
+        router.push("/")
       }
     },
   });
