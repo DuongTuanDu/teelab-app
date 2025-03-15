@@ -1,7 +1,7 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { baseQuery } from "@/configs/fetch";
-import { IResponseWithData } from "@/configs/base.interface";
-import { IDistrict, IProvince, IWard } from "./order.interface";
+import { IPagination, IResponseWithData } from "@/configs/base.interface";
+import { IDistrict, IOrder, IPayloadOrder, IProvince, IWard } from "./order.interface";
 
 const API_URL = process.env.EXPO_PUBLIC_API_SHIP_URL;
 const TOKEN = process.env.EXPO_PUBLIC_TOKEN_SHIP;
@@ -10,9 +10,9 @@ const SHOP_ID = process.env.EXPO_PUBLIC_SHOP_ID;
 export const orderApi = createApi({
     reducerPath: "orderApi",
     baseQuery: async (args, api, extraOptions) => {
-        const { url, method, data, params } = args;
+        const { url, method, body, params } = args;
         return baseQuery({
-            url, method, data, params,
+            url, method, body, params,
             config: {
                 headers: {
                     Token: TOKEN,
@@ -41,12 +41,39 @@ export const orderApi = createApi({
                 method: "GET",
             }),
             transformResponse: (response) => response.data,
-        })
+        }),
+        getOrders: builder.query<IResponseWithData<{
+            data: IOrder[],
+            pagination: IPagination,
+            statusCounts: {
+                pending: number,
+                processing: number,
+                shipping: number,
+                delivered: number,
+                cancelled: number,
+            }
+        }>, { page: number, pageSize: number, status: string }>({
+            query: ({ page = 1, pageSize = 10, status = "" }) => ({
+                url: API_URL + `/orders?status=${status}&page=${page}&pageSize=${pageSize}`,
+                method: "GET",
+            }),
+
+        }),
+        order: builder.mutation<IOrder, IPayloadOrder>({
+            query: (order) => ({
+                url: `/orders`,
+                method: "POST",
+                body: order,
+            }),
+            transformResponse: (response) => response.data,
+        }),
     })
 });
 
 export const {
     useGetProvinceQuery,
     useGetDistrictQuery,
-    useGetWardQuery
+    useGetWardQuery,
+    useGetOrdersQuery,
+    useOrderMutation
 } = orderApi;

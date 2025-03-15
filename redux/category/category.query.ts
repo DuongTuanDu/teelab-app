@@ -6,8 +6,8 @@ import { ICategory } from "./category.interface";
 export const categoryApi = createApi({
     reducerPath: "categoryApi",
     baseQuery: async (args, api, extraOptions) => {
-        const { url, method, data, params } = args;
-        return baseQuery({ url, method, data, params });
+        const { url, method, body, params } = args;
+        return baseQuery({ url, method, body, params });
     },
     endpoints: (builder) => ({
         getAllCategory: builder.query<IResponseWithData<ICategory[]>, void>({

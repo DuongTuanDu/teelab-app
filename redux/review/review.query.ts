@@ -6,8 +6,8 @@ import { IReview } from "./review.interface";
 export const reviewApi = createApi({
     reducerPath: "reviewApi",
     baseQuery: async (args, api, extraOptions) => {
-        const { url, method, data, params } = args;
-        return baseQuery({ url, method, data, params });
+        const { url, method, body, params } = args;
+        return baseQuery({ url, method, body, params });
     },
     endpoints: (builder) => ({
         getReviews: builder.query<IResponseWithPagination<IReview[]>, { page: number, pageSize: number, slug: string }>({

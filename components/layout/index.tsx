@@ -4,20 +4,20 @@ import Header from '../header';
 import Storage from '@/helpers/storage';
 import { useGetAccountQuery } from '@/redux/auth/auth.query';
 import Loading from '../loading';
-import { useAppDispatch } from '@/hooks/useRedux';
+import { useAppDispatch, useAppSelector } from '@/hooks/useRedux';
 import { AuthActions, getAccount } from '@/redux/auth/auth.slice';
 import { authEmitter } from '@/helpers/authEmitter';
 
 interface LayoutProps {
     children: React.ReactNode;
 }
-
 const LayoutScreen = ({ children }: LayoutProps) => {
+    const { isAuthenticated } = useAppSelector(state => state.auth);
     const [token, setToken] = useState<string | null>(null);
     const dispatch = useAppDispatch();
 
     const { data, isLoading } = useGetAccountQuery(undefined, {
-        skip: !token
+        skip: !token || isAuthenticated
     })
 
     useEffect(() => {
