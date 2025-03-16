@@ -4,7 +4,7 @@ import { useGetProductHomeQuery } from "@/redux/product/product.query";
 import React, { useState } from "react";
 import { Dimensions, Image, View, StyleSheet, Text } from "react-native";
 import Carousel from 'react-native-reanimated-carousel';
-import { Slide, slides } from "../const";
+import { Slide, slides } from "../../const";
 import ProductList from "@/components/products/product.list";
 import { ScrollView } from "react-native";
 

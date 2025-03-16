@@ -2,11 +2,8 @@ import { Tabs } from 'expo-router';
 import React from 'react';
 import { View } from 'react-native';
 import { Feather, Ionicons } from '@expo/vector-icons';
-import { useAppSelector } from '@/hooks/useRedux';
 
 const TabsLayout = () => {
-    const { isAuthenticated } = useAppSelector(state => state.auth)
-
     return (
         <Tabs
             screenOptions={{

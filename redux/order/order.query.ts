@@ -42,7 +42,7 @@ export const orderApi = createApi({
             }),
             transformResponse: (response) => response.data,
         }),
-        getOrders: builder.query<IResponseWithData<{
+        getOrders: builder.query<{
             data: IOrder[],
             pagination: IPagination,
             statusCounts: {
@@ -52,9 +52,9 @@ export const orderApi = createApi({
                 delivered: number,
                 cancelled: number,
             }
-        }>, { page: number, pageSize: number, status: string }>({
+        }, { page: number, pageSize: number, status: string }>({
             query: ({ page = 1, pageSize = 10, status = "" }) => ({
-                url: API_URL + `/orders?status=${status}&page=${page}&pageSize=${pageSize}`,
+                url: `/orders?status=${status}&page=${page}&pageSize=${pageSize}`,
                 method: "GET",
             }),
 

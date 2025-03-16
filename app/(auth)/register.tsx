@@ -14,7 +14,6 @@ import * as yup from 'yup';
 import { useFormik } from 'formik';
 import { useRouter } from 'expo-router';
 import { useAppDispatch } from '@/hooks/useRedux';
-import { useReducedMotion } from 'react-native-reanimated';
 import { useRegisterMutation } from '@/redux/auth/auth.query';
 import Toast from 'react-native-toast-message';
 import CustomButton from '@/components/custombutton';

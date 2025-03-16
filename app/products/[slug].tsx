@@ -11,7 +11,7 @@ import RenderHTML from "react-native-render-html";
 import ProductList from '@/components/products/product.list'
 import ReviewList from './review.list'
 import { useAppDispatch, useAppSelector } from '@/hooks/useRedux'
-import { size } from '../const'
+import { size } from '../../const'
 import { ICart } from '@/redux/cart/cart.interface'
 import { CartActions } from '@/redux/cart/cart.slice'
 import Toast from 'react-native-toast-message';
