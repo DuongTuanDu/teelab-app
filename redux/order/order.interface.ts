@@ -26,7 +26,7 @@ export interface IOrder {
         image: string,
         size: string,
         color: string | null,
-        price: string,
+        price: number,
         quantity: number,
         isReviewed: boolean
     }[],
@@ -58,21 +58,20 @@ export interface IPayloadOrder {
         name: string,
         image: string,
         size: string,
-        color?: string,
-        price: string,
+        color?: string | null,
+        price: number,
         quantity: number,
-        isReviewed: boolean
     }[],
     province: {
-        id: number,
+        id: number | null,
         name: string,
     },
     district: {
-        id: number,
+        id: number | null,
         name: string,
     },
     ward: {
-        id: string,
+        id: string | null,
         name: string,
     },
     phone: string,

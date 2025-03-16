@@ -15,6 +15,7 @@ import { size } from '../../const'
 import { ICart } from '@/redux/cart/cart.interface'
 import { CartActions } from '@/redux/cart/cart.slice'
 import Toast from 'react-native-toast-message';
+import CheckoutForm from '@/components/checkout'
 
 const { width } = Dimensions.get('window')
 
@@ -34,6 +35,7 @@ const ProductDetail = () => {
         price: 0,
         quantity: 1,
     })
+    const [showCheckOut, setShowCheckOut] = useState<boolean>(false)
 
     const { data, isLoading } = useGetProductDetailQuery(slugValue, {
         skip: !slugValue
@@ -74,10 +76,6 @@ const ProductDetail = () => {
             text1: product?.name,
             text2: "Đã được thêm vào giỏ hàng 🛒",
         });
-    }
-
-    const handleBuyNow = () => {
-
     }
 
     const renderRatingStars = (rating: number) => {
@@ -131,6 +129,15 @@ const ProductDetail = () => {
     return (
         <SafeAreaView className="flex-1 bg-white">
             <ScrollView ref={scrollRef} showsVerticalScrollIndicator={false} className="flex-1">
+                <CheckoutForm
+                    {...{
+                        open: showCheckOut,
+                        onClose: () => setShowCheckOut(false),
+                        products: [cartItem],
+                        isCart: false,
+                        totalBuyNow: cartItem.price * cartItem.quantity
+                    }}
+                />
                 {/* Product Images */}
                 <View>
                     <FlatList
@@ -295,8 +302,8 @@ const ProductDetail = () => {
                     <Text className="font-bold text-blue-600">Thêm vào giỏ</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                    className="flex-1 items-center justify-center bg-[#4f637e] rounded-lg"
-                    onPress={handleBuyNow}
+                    className="flex-1 items-center justify-center bg-[#1c1818] rounded-lg"
+                    onPress={() => setShowCheckOut(true)}
                 >
                     <Text className="font-bold text-white">Mua ngay</Text>
                 </TouchableOpacity>

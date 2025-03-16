@@ -1,5 +1,5 @@
 import { ICart } from '@/redux/cart/cart.interface'
-import { useGetDistrictQuery, useGetProvinceQuery, useGetWardQuery } from '@/redux/order/order.query'
+import { useGetDistrictQuery, useGetProvinceQuery, useGetWardQuery, useOrderMutation } from '@/redux/order/order.query'
 import React, { useState } from 'react'
 import { View, Text, TextInput, ScrollView, TouchableOpacity, Modal, ActivityIndicator, Image } from 'react-native'
 import { Feather } from '@expo/vector-icons'
@@ -7,13 +7,18 @@ import { formatPrice } from '@/helpers/formatPrice'
 import { Picker } from '@react-native-picker/picker'
 import * as yup from 'yup'
 import { useFormik } from 'formik'
-import { useAppSelector } from '@/hooks/useRedux'
+import { useAppDispatch, useAppSelector } from '@/hooks/useRedux'
+import CustomButton from '../custombutton'
+import Toast from 'react-native-toast-message'
+import { useRouter } from 'expo-router'
+import { CartActions } from '@/redux/cart/cart.slice'
 
 interface IProps {
     open: boolean,
     onClose: () => void,
     products: ICart[],
-    isCart?: boolean
+    isCart?: boolean,
+    totalBuyNow?: number
 }
 
 interface ILocation {
@@ -55,9 +60,14 @@ const CheckoutForm = ({
     open,
     onClose,
     products = [],
-    isCart = true
+    isCart = true,
+    totalBuyNow = 0
 }: IProps) => {
+    const router = useRouter()
+    const dispatch = useAppDispatch()
+    const [createOrder, { isLoading, error }] = useOrderMutation()
     const { totalAmount } = useAppSelector(state => state.cart)
+    const { isAuthenticated } = useAppSelector(state => state.auth)
     const [location, setLocation] = useState<ILocation>({
         province: {
             id: null,
@@ -83,6 +93,13 @@ const CheckoutForm = ({
         { skip: !location.district.id }
     );
 
+    if (error) {
+        Toast.show({
+            type: "error",
+            text1: error?.message || "Có lỗi xảy ra khi đặt hàng"
+        })
+    }
+
     // Khởi tạo formik
     const formik = useFormik<IOrderForm>({
         initialValues: {
@@ -93,10 +110,38 @@ const CheckoutForm = ({
             paymentMethod: 'COD'
         },
         validationSchema,
-        onSubmit: (values) => {
-            // Để lại handleSubmit như yêu cầu
-            console.log('Form values:', values);
-            console.log('Location:', location);
+        onSubmit: async (values) => {
+            if (!isAuthenticated) {
+                router.replace('/login')
+                return
+            }
+
+            switch (values.paymentMethod) {
+                case "COD":
+                    const resCod = await createOrder({
+                        order: {
+                            ...values,
+                            ...location,
+                            products,
+                            totalAmount: isCart ? totalAmount : totalBuyNow,
+                        },
+                        method: 'cod'
+                    }).unwrap()
+                    if (resCod?._id) {
+                        Toast.show({
+                            type: "success",
+                            text1: "📢 Đặt hàng thành công",
+                            text2: "Cảm ơn quý khách đã tin tưởng sản phẩm Teelab ❤️"
+                        })
+                        if (isCart) {
+                            dispatch(CartActions.clearCart())
+                        }
+                        router.replace('/orders')
+                        break
+                    }
+                default:
+                    break
+            }
         }
     });
 
@@ -186,7 +231,7 @@ const CheckoutForm = ({
                         <View className="h-0.5 bg-gray-100 my-3" />
                         <View className="flex-row justify-between">
                             <Text className="font-medium">Tạm tính:</Text>
-                            <Text className="font-bold">{formatPrice(totalAmount)}đ</Text>
+                            <Text className="font-bold">{formatPrice(isCart ? totalAmount : totalBuyNow)}đ</Text>
                         </View>
                     </View>
 
@@ -413,7 +458,7 @@ const CheckoutForm = ({
                     <View className="bg-white rounded-lg shadow-sm p-4 mb-4">
                         <View className="flex-row justify-between items-center py-2">
                             <Text className="text-gray-500">Tạm tính:</Text>
-                            <Text className="text-gray-800 font-medium">{formatPrice(totalAmount)}đ</Text>
+                            <Text className="text-gray-800 font-medium">{formatPrice(isCart ? totalAmount : totalBuyNow)}đ</Text>
                         </View>
 
                         <View className="flex-row justify-between items-center py-2">
@@ -423,11 +468,12 @@ const CheckoutForm = ({
 
                         <View className="flex-row justify-between items-center py-3 border-t border-gray-100 mt-2 mb-4">
                             <Text className="text-gray-800 font-bold text-base">Tổng thanh toán:</Text>
-                            <Text className="font-bold text-lg">{formatPrice(totalAmount)}đ</Text>
+                            <Text className="font-bold text-lg">{formatPrice(isCart ? totalAmount : totalBuyNow)}đ</Text>
                         </View>
-
-                        <TouchableOpacity
-                            className="bg-[#4f637e] rounded-xl flex-row justify-center items-center py-4"
+                        <CustomButton
+                            label='Đặt hàng'
+                            icon="arrow-forward-outline"
+                            size="lg"
                             onPress={() => {
                                 if (!isLocationValid()) {
                                     formik.submitForm();
@@ -435,12 +481,9 @@ const CheckoutForm = ({
                                 }
                                 formik.handleSubmit();
                             }}
-                        >
-                            <Text className="text-white font-semibold text-base mr-2">
-                                Đặt hàng
-                            </Text>
-                            <Feather name="arrow-right" size={20} color="#FFFFFF" />
-                        </TouchableOpacity>
+                            variant="primary"
+                            loading={isLoading}
+                        />
                     </View>
                 </ScrollView>
             </View>
