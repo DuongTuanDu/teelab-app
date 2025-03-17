@@ -12,6 +12,7 @@ import CustomButton from '../custombutton'
 import Toast from 'react-native-toast-message'
 import { useRouter } from 'expo-router'
 import { CartActions } from '@/redux/cart/cart.slice'
+import { eventEmitter } from '@/helpers/eventEmitter'
 
 interface IProps {
     open: boolean,
@@ -136,6 +137,7 @@ const CheckoutForm = ({
                         if (isCart) {
                             dispatch(CartActions.clearCart())
                         }
+                        eventEmitter.emit('createOrder');
                         router.replace('/orders')
                         break
                     }

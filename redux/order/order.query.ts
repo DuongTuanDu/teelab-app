@@ -61,7 +61,7 @@ export const orderApi = createApi({
         }),
         order: builder.mutation<IOrder, { order: IPayloadOrder, method: 'cod' | 'vnpay' | 'stripe' }>({
             query: ({ order, method = 'cod' }) => ({
-                url: `/orders-${method}`,
+                url: `/order-${method}`,
                 method: "POST",
                 body: order,
             }),

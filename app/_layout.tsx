@@ -1,5 +1,4 @@
 import { Stack } from "expo-router";
-import { GluestackUIProvider } from "@/components/ui/gluestack-ui-provider";
 import "./global.css"
 import { store } from "@/redux/store";
 import { Provider } from 'react-redux'
@@ -48,13 +47,11 @@ const toastConfig: ToastConfig = {
 export default function RootLayout() {
   return (
     <Provider store={store}>
-      <GluestackUIProvider>
-        <ReduxSync />
-        <LayoutScreen>
-          <Stack screenOptions={{ headerShown: false }} />
-        </LayoutScreen>
-        <Toast config={toastConfig} />
-      </GluestackUIProvider>
+      <ReduxSync />
+      <LayoutScreen>
+        <Stack screenOptions={{ headerShown: false }} />
+      </LayoutScreen>
+      <Toast config={toastConfig} />
     </Provider>
   );
 }

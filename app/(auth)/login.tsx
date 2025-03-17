@@ -19,9 +19,8 @@ import CustomButton from '@/components/custombutton';
 import { useLoginMutation } from '@/redux/auth/auth.query';
 import Toast from 'react-native-toast-message';
 import Storage from '@/helpers/storage';
-import { authEmitter } from '@/helpers/authEmitter';
+import { eventEmitter } from '@/helpers/eventEmitter';
 import { useAppDispatch } from '@/hooks/useRedux';
-import { AuthActions } from '@/redux/auth/auth.slice';
 
 interface ILoginFormValues {
   email: string;
@@ -66,7 +65,7 @@ const LoginScreen = () => {
       const res = await loginCustomer({ email: values.email, password: values.password }).unwrap()
       if (res.success) {
         await Storage.setItem("ACCESS_TOKEN", res.accessToken);
-        authEmitter.emit('tokenChanged', res.accessToken);
+        eventEmitter.emit('tokenChanged', res.accessToken);
 
         if (values.rememberMe) {
           await Promise.all([

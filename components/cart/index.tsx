@@ -6,6 +6,7 @@ import CartItem from './cart.item';
 import { formatPrice } from '@/helpers/formatPrice';
 import CheckoutForm from '../checkout';
 import Toast from 'react-native-toast-message';
+import CustomButton from '../custombutton';
 
 const CartList = () => {
     const dispatch = useAppDispatch();
@@ -40,15 +41,12 @@ const CartList = () => {
                 <Text className="text-gray-900 font-bold text-lg">{formatPrice(totalAmount)}đ</Text>
             </View>
 
-            <TouchableOpacity
-                className="bg-[#4f637e] rounded-xl flex-row justify-center items-center py-4"
+            <CustomButton
+                label='Thanh toán ngay'
                 onPress={handleCheckout}
-            >
-                <Text className="text-white font-semibold text-base mr-2">
-                    Thanh toán ngay
-                </Text>
-                <Feather name="arrow-right" size={20} color="#FFFFFF" />
-            </TouchableOpacity>
+                size="lg"
+                icon="arrow-forward"
+            />
         </View>
     );
 

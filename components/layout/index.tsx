@@ -6,7 +6,7 @@ import { useGetAccountQuery } from '@/redux/auth/auth.query';
 import Loading from '../loading';
 import { useAppDispatch, useAppSelector } from '@/hooks/useRedux';
 import { AuthActions, getAccount } from '@/redux/auth/auth.slice';
-import { authEmitter } from '@/helpers/authEmitter';
+import { eventEmitter } from '@/helpers/eventEmitter';
 
 interface LayoutProps {
     children: React.ReactNode;
@@ -31,10 +31,10 @@ const LayoutScreen = ({ children }: LayoutProps) => {
             setToken(newToken);
             dispatch(getAccount());
         };
-        authEmitter.on('tokenChanged', tokenListener);
+        eventEmitter.on('tokenChanged', tokenListener);
 
         return () => {
-            authEmitter.off('tokenChanged', tokenListener);
+            eventEmitter.off('tokenChanged', tokenListener);
         };
     }, []);
 
