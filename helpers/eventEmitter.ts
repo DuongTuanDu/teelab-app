@@ -2,6 +2,7 @@ import mitt from 'mitt';
 
 type Events = {
   tokenChanged: string;
+  createOrder: void
 };
 
-export const authEmitter = mitt<Events>();
+export const eventEmitter = mitt<Events>();

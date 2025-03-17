@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     View,
     Text,
@@ -17,6 +17,7 @@ import { Redirect } from 'expo-router';
 import { statusTypes } from '@/const';
 import { IOrder } from '@/redux/order/order.interface';
 import OrderItem from './order.item';
+import { eventEmitter } from '@/helpers/eventEmitter';
 
 
 interface IQuery {
@@ -81,6 +82,14 @@ const OrderHistory = () => {
         { ...query },
         { skip: !isAuthenticated }
     );
+
+    useEffect(() => {
+        eventEmitter.on('createOrder', refetch);
+
+        return () => {
+            eventEmitter.off('createOrder', refetch);
+        };
+    }, [])
 
     const {
         data: orders = [],
