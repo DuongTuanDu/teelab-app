@@ -255,7 +255,14 @@ const ProductDetail = () => {
                                         : "bg-white text-gray-700 border-gray-200 hover:border-rose-600"
                                     }`}
                             >
-                                {itemSize}
+                                <Text
+                                    className={`font-bold ${cartItem.size === itemSize
+                                            ? "text-white"
+                                            : "text-gray-700"
+                                        }`}
+                                >
+                                    {itemSize}
+                                </Text>
                             </Pressable>
                         ))}
                     </View>
