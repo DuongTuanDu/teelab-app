@@ -1,5 +1,5 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { IAuthState, ICustomer } from "./auth.interface";
+import { IAccount, IAuthState, ICustomer } from "./auth.interface";
 import Storage from "@/helpers/storage";
 import axiosInstance from "@/configs/fetch";
 
@@ -8,7 +8,8 @@ const initialState: IAuthState = {
     isAuthenticated: false,
     authLoading: false,
     emailVerify: "",
-    isResetPassword: false
+    isResetPassword: false,
+    userInfo: {},
 };
 
 export const logout = createAsyncThunk(
@@ -45,7 +46,10 @@ export const authSlice = createSlice({
         },
         setIsResetPassword: (state, { payload }: { payload: boolean }) => {
             state.isResetPassword = payload
-        }
+        },
+        setUserInfo(state, { payload }: { payload: IAccount }) {
+            state.userInfo = payload;
+        },
     },
     extraReducers: (builder) => {
         builder

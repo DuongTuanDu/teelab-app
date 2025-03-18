@@ -16,7 +16,8 @@ export interface IAuthState {
     isAuthenticated: boolean,
     authLoading: boolean,
     emailVerify: string,
-    isResetPassword: boolean
+    isResetPassword: boolean,
+    userInfo?: {},
 }
 
 export interface ILogin {
@@ -30,5 +31,32 @@ export interface ILogin {
             url: string,
             publicId?: string
         }
+    }
+}
+
+export interface IAccount {
+    name: string;
+    email: string;
+    password?: string;
+    rePassword?: string;
+}
+
+export interface IAccountResponse {
+    success: boolean,
+    message: string,
+    data: {
+        _id: string,
+        name: string,
+        email: string,
+        password: string,
+        avatar: {
+            url: string,
+            publicId?: string
+        },
+        isActive: boolean,
+        wishlist?: string[],
+        createdAt?: string,
+        updatedAt?: string,
+        __v?: number
     }
 }
