@@ -1,8 +1,8 @@
-import CategoryBanner from '@/components/CategoryBanner';
+import CategoryBanner from '@/components/category-banner'
 import React, { useRef, useState } from 'react'
 import { ActivityIndicator, Text, View } from 'react-native'
 import { Animated } from 'react-native';
-import FilterOption from './FilterOption';
+import FilterOption from './filter-option';
 import ProductList from '@/components/products/product.list';
 import { useGetProductsByCategoryQuery } from '@/redux/product/product.query';
 import { ICategory } from '@/redux/category/category.interface';

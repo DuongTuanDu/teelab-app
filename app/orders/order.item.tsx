@@ -3,20 +3,47 @@ import { statusColors, statusTranslations } from "@/const";
 import { formatPrice } from "@/helpers/formatPrice";
 import { IOrder } from "@/redux/order/order.interface";
 import { Feather } from "@expo/vector-icons";
-import { Image } from "react-native";
-import { Text } from "react-native";
-import { View } from "react-native";
-import { TouchableOpacity } from "react-native";
+import { useState } from "react";
+import { Image, Text, View, TouchableOpacity } from "react-native";
+import ConfirmModal from "./order.confirm";
+import ReviewModal from "./order.review";
 
 interface IProps {
     order: IOrder;
     onPressReview: (orderId: string, productId: string) => void;
     onPressComplete: (orderId: string) => void;
     onPressCancel: (orderId: string) => void;
+    loadingUpdate: boolean
 }
 
+interface IModalConfig {
+    visible: boolean;
+    title: string;
+    message: string;
+    confirmText: string;
+    variantColor: string;
+    onConfirm: () => void;
+    loadingUpdate?: boolean
+}
 
-const OrderItem = ({ order, onPressReview, onPressComplete, onPressCancel }: IProps) => {
+interface IProduct {
+    productId: string;
+    productName: string;
+    productImage: string;
+    orderId: string;
+}
+
+const OrderItem = ({ order, onPressReview, onPressComplete, onPressCancel, loadingUpdate }: IProps) => {
+    const [modalConfig, setModalConfig] = useState<IModalConfig>({
+        visible: false,
+        title: '',
+        message: '',
+        confirmText: '',
+        variantColor: 'danger',
+        onConfirm: () => { }
+    });
+    const [openReview, setOpenReview] = useState<boolean>(false)
+    const [productSelected, setProductSelected] = useState<IProduct | null>(null);
     const status = order.status;
     const formattedDate = new Date(order.createdAt).toLocaleDateString('vi-VN', {
         year: 'numeric',
@@ -26,10 +53,68 @@ const OrderItem = ({ order, onPressReview, onPressComplete, onPressCancel }: IPr
         minute: '2-digit'
     });
 
+    const showCancelModal = () => {
+        setModalConfig({
+            visible: true,
+            title: 'Xác nhận hủy đơn',
+            message: 'Bạn có chắc chắn muốn hủy đơn hàng này không?',
+            confirmText: 'Có, hủy đơn',
+            variantColor: 'danger',
+            onConfirm: () => {
+                setModalConfig(prev => ({ ...prev, visible: false }));
+                onPressCancel(order._id);
+            }
+        });
+    };
+
+    const showCompleteModal = () => {
+        setModalConfig({
+            visible: true,
+            title: 'Xác nhận đã nhận hàng',
+            message: 'Bạn xác nhận đã nhận được đơn hàng này?',
+            confirmText: 'Đã nhận hàng',
+            variantColor: 'primary',
+            onConfirm: () => {
+                setModalConfig(prev => ({ ...prev, visible: false }));
+                onPressComplete(order._id);
+            }
+        });
+    };
+
+    const openReviewOrder = (product: IProduct) => {
+        setProductSelected(product);
+        setOpenReview(true);
+    }
+
+    const closeModal = () => {
+        setModalConfig(prev => ({ ...prev, visible: false }));
+    };
+
     return (
         <TouchableOpacity
             className="bg-white mb-3 rounded-lg shadow-sm overflow-hidden border border-gray-100"
         >
+            {productSelected && (
+                <ReviewModal
+                    visible={openReview}
+                    onClose={() => setOpenReview(false)}
+                    onSubmit={() => { }}
+                    productName={productSelected.productName}
+                    productImage={productSelected.productImage}
+                    loading={loadingUpdate}
+                />
+            )}
+            <ConfirmModal
+                visible={modalConfig.visible}
+                title={modalConfig.title}
+                message={modalConfig.message}
+                confirmText={modalConfig.confirmText}
+                cancelText="Không"
+                onConfirm={modalConfig.onConfirm}
+                onCancel={closeModal}
+                variantColor={modalConfig.variantColor}
+                loadingUpdate={loadingUpdate}
+            />
             {/* Order header */}
             <View className="p-4 border-b border-gray-100 flex-row justify-between items-center">
                 <View className="flex-row items-center">
@@ -61,7 +146,7 @@ const OrderItem = ({ order, onPressReview, onPressComplete, onPressCancel }: IPr
                                 {product.color && ` | Màu: ${product.color}`}
                             </Text>
                             <View className="flex-row justify-between mt-1">
-                                <Text className="text-gray-600">{formatPrice(parseInt(product.price))} x {product.quantity}</Text>
+                                <Text className="text-gray-600">{formatPrice(product.price)} x {product.quantity}</Text>
                             </View>
                         </View>
                     </View>
@@ -87,10 +172,10 @@ const OrderItem = ({ order, onPressReview, onPressComplete, onPressCancel }: IPr
 
                 {/* Order actions */}
                 <View className="flex-row justify-end mt-3 pt-3 border-t border-gray-100">
-                    {status === 'pending' || status === 'processing' && (
+                    {(status === 'pending' || status === 'processing') && (
                         <CustomButton
                             label="Hủy đơn"
-                            onPress={() => onPressCancel(order._id)}
+                            onPress={showCancelModal}
                             variant="danger"
                         />
                     )}
@@ -98,7 +183,7 @@ const OrderItem = ({ order, onPressReview, onPressComplete, onPressCancel }: IPr
                     {status === 'shipping' && (
                         <CustomButton
                             label="Đã nhận hàng"
-                            onPress={() => onPressComplete(order._id)}
+                            onPress={showCompleteModal}
                             variant="primary"
                         />
                     )}
@@ -108,8 +193,18 @@ const OrderItem = ({ order, onPressReview, onPressComplete, onPressCancel }: IPr
                             {order.products.filter(p => !p.isReviewed).map((product) => (
                                 <CustomButton
                                     key={`review-${product.productId}`}
-                                    label="Đánh giá"
-                                    onPress={() => onPressReview(order._id, product.productId)}
+                                    label={product.isReviewed ? 'Đã đánh giá' : 'Đánh giá'}
+                                    onPress={() => {
+                                        if (product.isReviewed) return;
+                                        openReviewOrder({
+                                            productId: product.productId,
+                                            orderId: order._id,
+                                            productImage: product.image,
+                                            productName: product.name
+                                        })
+                                    }}
+                                    variant="dark"
+                                    disabled={product.isReviewed || false}
                                 />
                             )).slice(0, 1)}
                         </View>

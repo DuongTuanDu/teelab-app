@@ -12,12 +12,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import Loading from '@/components/loading';
 import { useAppSelector } from '@/hooks/useRedux';
-import { useGetOrdersQuery } from '@/redux/order/order.query';
+import { useGetOrdersQuery, useUpdateOrderStatusMutation } from '@/redux/order/order.query';
 import { Redirect } from 'expo-router';
 import { statusTypes } from '@/const';
-import { IOrder } from '@/redux/order/order.interface';
 import OrderItem from './order.item';
 import { eventEmitter } from '@/helpers/eventEmitter';
+import Toast from 'react-native-toast-message';
 
 
 interface IQuery {
@@ -82,6 +82,14 @@ const OrderHistory = () => {
         { ...query },
         { skip: !isAuthenticated }
     );
+    const [updateOrderStatus, { isLoading: loadingUpdate, error }] = useUpdateOrderStatusMutation();
+
+    if (error) {
+        Toast.show({
+            type: "error",
+            text1: error?.message || "Có lỗi xảy ra khi cập nhật thông tin đơn hàng"
+        })
+    }
 
     useEffect(() => {
         eventEmitter.on('createOrder', refetch);
@@ -116,8 +124,15 @@ const OrderHistory = () => {
     };
 
     // Handle cancel order action
-    const handlePressCancel = (orderId: string) => {
-
+    const handlePressCancel = async (orderId: string) => {
+        const res = await updateOrderStatus({ id: orderId, status: "cancelled" }).unwrap();
+        if (res.data._id) {
+            Toast.show({
+                type: "success",
+                text1: res.message
+            })
+            refetch();
+        }
     };
 
     // Handle review action
@@ -126,8 +141,15 @@ const OrderHistory = () => {
     };
 
     // Handle complete order action
-    const handlePressComplete = (orderId: string) => {
-
+    const handlePressComplete = async (orderId: string) => {
+        const res = await updateOrderStatus({ id: orderId, status: "delivered" }).unwrap();
+        if (res.data._id) {
+            Toast.show({
+                type: "success",
+                text1: res.message
+            })
+            refetch();
+        }
     };
 
     // Handle page change
@@ -201,6 +223,7 @@ const OrderHistory = () => {
                             onPressReview={handlePressReview}
                             onPressComplete={handlePressComplete}
                             onPressCancel={handlePressCancel}
+                            loadingUpdate={loadingUpdate}
                         />
                     )}
                     contentContainerStyle={{ padding: 12 }}

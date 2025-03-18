@@ -80,3 +80,14 @@ export interface IPayloadOrder {
     note?: string,
     totalAmount: number,
 }
+
+export interface IPayloadReview {
+    order: string,
+    product: string,
+    rate: number,
+    comment: string,
+    images?: {
+        url: string,
+        publicId: string
+    }
+}

@@ -1,7 +1,8 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { baseQuery } from "@/configs/fetch";
 import { IPagination, IResponseWithData } from "@/configs/base.interface";
-import { IDistrict, IOrder, IPayloadOrder, IProvince, IWard } from "./order.interface";
+import { IDistrict, IOrder, IPayloadOrder, IPayloadReview, IProvince, IWard } from "./order.interface";
+import { IReview } from "../review/review.interface";
 
 const API_URL = process.env.EXPO_PUBLIC_API_SHIP_URL;
 const TOKEN = process.env.EXPO_PUBLIC_TOKEN_SHIP;
@@ -67,6 +68,20 @@ export const orderApi = createApi({
             }),
             transformResponse: (response) => response.data,
         }),
+        updateOrderStatus: builder.mutation<{ data: IOrder, message: string }, { id: string, status: string }>({
+            query: ({ id, status }) => ({
+                url: `/order-status/${id}`,
+                method: "PUT",
+                body: { status },
+            }),
+        }),
+        reviewOrder: builder.mutation<{ data: IReview, message: string }, IPayloadReview>({
+            query: ({ order, product, rate, comment, images = [] }) => ({
+                url: `/review`,
+                method: "POST",
+                body: { order, product, rate, comment, images },
+            }),
+        }),
     })
 });
 
@@ -75,5 +90,7 @@ export const {
     useGetDistrictQuery,
     useGetWardQuery,
     useGetOrdersQuery,
-    useOrderMutation
+    useOrderMutation,
+    useUpdateOrderStatusMutation,
+    useReviewOrderMutation
 } = orderApi;
