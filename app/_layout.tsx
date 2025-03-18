@@ -7,6 +7,7 @@ import ReduxSync from "@/redux/redux-sync";
 import Toast, { ErrorToast, InfoToast, SuccessToast, ToastConfig } from "react-native-toast-message";
 import { Feather, Ionicons } from '@expo/vector-icons';
 import { View } from "react-native";
+import { StripeProvider } from '@stripe/stripe-react-native';
 
 const toastConfig: ToastConfig = {
   success: (props) => (
@@ -46,12 +47,18 @@ const toastConfig: ToastConfig = {
 
 export default function RootLayout() {
   return (
+
     <Provider store={store}>
+      <StripeProvider
+        publishableKey={process.env.EXPO_PUBLIC_STRIPE_PUBLIC_KEY!}
+        merchantIdentifier="merchant.identifier"
+      >
       <ReduxSync />
       <LayoutScreen>
         <Stack screenOptions={{ headerShown: false }} />
       </LayoutScreen>
       <Toast config={toastConfig} />
+      </StripeProvider >
     </Provider>
   );
 }

@@ -10,10 +10,10 @@ import ReviewModal from "./order.review";
 
 interface IProps {
     order: IOrder;
-    onPressReview: (orderId: string, productId: string) => void;
     onPressComplete: (orderId: string) => void;
     onPressCancel: (orderId: string) => void;
     loadingUpdate: boolean
+    refetch: () => void
 }
 
 interface IModalConfig {
@@ -33,7 +33,7 @@ interface IProduct {
     orderId: string;
 }
 
-const OrderItem = ({ order, onPressReview, onPressComplete, onPressCancel, loadingUpdate }: IProps) => {
+const OrderItem = ({ order, onPressComplete, onPressCancel, loadingUpdate, refetch}: IProps) => {
     const [modalConfig, setModalConfig] = useState<IModalConfig>({
         visible: false,
         title: '',
@@ -98,10 +98,11 @@ const OrderItem = ({ order, onPressReview, onPressComplete, onPressCancel, loadi
                 <ReviewModal
                     visible={openReview}
                     onClose={() => setOpenReview(false)}
-                    onSubmit={() => { }}
                     productName={productSelected.productName}
                     productImage={productSelected.productImage}
-                    loading={loadingUpdate}
+                    productId={productSelected.productId}
+                    orderId={productSelected.orderId}
+                    refetch={refetch}
                 />
             )}
             <ConfirmModal
@@ -188,9 +189,9 @@ const OrderItem = ({ order, onPressReview, onPressComplete, onPressCancel, loadi
                         />
                     )}
 
-                    {status === 'delivered' && order.products.some(p => !p.isReviewed) && (
+                    {status === 'delivered' && (
                         <View className="flex-row">
-                            {order.products.filter(p => !p.isReviewed).map((product) => (
+                            {order.products.map((product) => (
                                 <CustomButton
                                     key={`review-${product.productId}`}
                                     label={product.isReviewed ? 'Đã đánh giá' : 'Đánh giá'}

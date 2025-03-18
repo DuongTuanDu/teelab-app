@@ -82,6 +82,13 @@ export const orderApi = createApi({
                 body: { order, product, rate, comment, images },
             }),
         }),
+        createIntent: builder.mutation<{ data: any }, { amount: number }>({
+            query: ({ amount }) => ({
+                url: `/create-payment-intent`,
+                method: "POST",
+                body: { amount },
+            }),
+        }),
     })
 });
 
@@ -92,5 +99,6 @@ export const {
     useGetOrdersQuery,
     useOrderMutation,
     useUpdateOrderStatusMutation,
-    useReviewOrderMutation
+    useReviewOrderMutation,
+    useCreateIntentMutation
 } = orderApi;

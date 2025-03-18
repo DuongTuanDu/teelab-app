@@ -1,5 +1,5 @@
 import { ICart } from '@/redux/cart/cart.interface'
-import { useGetDistrictQuery, useGetProvinceQuery, useGetWardQuery, useOrderMutation } from '@/redux/order/order.query'
+import { useCreateIntentMutation, useGetDistrictQuery, useGetProvinceQuery, useGetWardQuery, useOrderMutation } from '@/redux/order/order.query'
 import React, { useState } from 'react'
 import { View, Text, TextInput, ScrollView, TouchableOpacity, Modal, ActivityIndicator, Image } from 'react-native'
 import { Feather } from '@expo/vector-icons'
@@ -13,6 +13,7 @@ import Toast from 'react-native-toast-message'
 import { useRouter } from 'expo-router'
 import { CartActions } from '@/redux/cart/cart.slice'
 import { eventEmitter } from '@/helpers/eventEmitter'
+import { useStripe } from '@stripe/stripe-react-native';
 
 interface IProps {
     open: boolean,
@@ -64,9 +65,11 @@ const CheckoutForm = ({
     isCart = true,
     totalBuyNow = 0
 }: IProps) => {
+    const { initPaymentSheet, presentPaymentSheet } = useStripe();
     const router = useRouter()
     const dispatch = useAppDispatch()
     const [createOrder, { isLoading, error }] = useOrderMutation()
+    const [createIntent, { isLoading: loadingCreateIntent }] = useCreateIntentMutation()
     const { totalAmount } = useAppSelector(state => state.cart)
     const { isAuthenticated } = useAppSelector(state => state.auth)
     const [location, setLocation] = useState<ILocation>({
@@ -141,6 +144,33 @@ const CheckoutForm = ({
                         router.replace('/orders')
                         break
                     }
+                case "STRIPE":
+                    const res = await createIntent({ amount: isCart ? totalAmount : totalBuyNow }).unwrap()
+                    console.log(res);
+
+                    if (!res) return
+
+                    const { error } = await initPaymentSheet({
+                        paymentIntentClientSecret: res.data,
+                        merchantDisplayName: 'Teelab',
+                    });
+                    if (error) {
+                        Toast.show({
+                            type: "error",
+                            text1: "Lỗi khởi tạo thanh toán"
+                        });
+                        return;
+                    }
+
+                    const { error: paymentError } = await presentPaymentSheet();
+
+                    if (paymentError) {
+                        Toast.show({
+                            type: "error",
+                            text1: "Thanh toán thất bại vui lòng thử lại"
+                        });
+                        return
+                    } 
                 default:
                     break
             }
