@@ -10,6 +10,7 @@ const initialState: IAuthState = {
     emailVerify: "",
     isResetPassword: false,
     userInfo: {},
+    socket: null
 };
 
 export const logout = createAsyncThunk(
@@ -50,6 +51,9 @@ export const authSlice = createSlice({
         setUserInfo(state, { payload }: { payload: IAccount }) {
             state.userInfo = payload;
         },
+        setSocket(state, action) {
+            state.socket = action.payload;
+          },
     },
     extraReducers: (builder) => {
         builder
