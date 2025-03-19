@@ -135,11 +135,6 @@ const OrderHistory = () => {
         }
     };
 
-    // Handle review action
-    const handlePressReview = (orderId: string, productId: string) => {
-
-    };
-
     // Handle complete order action
     const handlePressComplete = async (orderId: string) => {
         const res = await updateOrderStatus({ id: orderId, status: "delivered" }).unwrap();
@@ -220,10 +215,10 @@ const OrderHistory = () => {
                     renderItem={({ item }) => (
                         <OrderItem
                             order={item}
-                            onPressReview={handlePressReview}
                             onPressComplete={handlePressComplete}
                             onPressCancel={handlePressCancel}
                             loadingUpdate={loadingUpdate}
+                            refetch={refetch}
                         />
                     )}
                     contentContainerStyle={{ padding: 12 }}

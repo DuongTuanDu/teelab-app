@@ -45,7 +45,6 @@ const FilterOption = ({ currentFilters, onFilterChange }: FilterOptionProps) => 
             ? currentFilters[key].length > 0
             : currentFilters[key] !== null && currentFilters[key] !== ""
     );
-    console.log("Price Ranges:", data?.priceRanges);
 
     return (
         <View className="p-4 space-y-6 bg-white">

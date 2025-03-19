@@ -89,5 +89,5 @@ export interface IPayloadReview {
     images?: {
         url: string,
         publicId: string
-    }
+    }[]
 }

@@ -2,37 +2,49 @@ import React, { useState, useRef } from 'react';
 import { Modal, View, Text, TouchableOpacity, TextInput, Image, ScrollView, Platform } from 'react-native';
 import CustomButton from "@/components/custombutton";
 import { Feather, AntDesign } from "@expo/vector-icons";
+import { uploadFile } from '@/utils/cloudinary';
+import { IPayloadReview } from '@/redux/order/order.interface';
+import { useReviewOrderMutation } from '@/redux/order/order.query';
+import Toast from 'react-native-toast-message';
 
 interface IReviewImage {
-  file: File;
-  previewUrl: string;
+    file: File;
+    previewUrl: string;
 }
 
 interface IProps {
     visible: boolean;
     onClose: () => void;
-    onSubmit: (data: {
-        rate: number;
-        comment: string;
-        images: File[];
-    }) => void;
     productName: string;
     productImage: string;
-    loading?: boolean;
+    productId: string;
+    orderId: string;
+    refetch: () => void
 }
 
 const ReviewModal = ({
     visible,
     onClose,
-    onSubmit,
     productName,
     productImage,
-    loading = false
-}: IProps) => {    
+    productId,
+    orderId,
+    refetch
+}: IProps) => {
     const [rate, setRate] = useState(5);
     const [comment, setComment] = useState('');
     const [reviewImages, setReviewImages] = useState<IReviewImage[]>([]);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const [loadingUpload, setLoadingUpload] = useState<boolean>(false);
+
+    const [reviewOrder, { isLoading, error }] = useReviewOrderMutation();
+
+    if (error) {
+        Toast.show({
+            type: "error",
+            text1: error?.message || "Có lỗi xảy ra khi đánh giá"
+        })
+    }
 
     const handlePickImage = () => {
         if (Platform.OS === 'web' && fileInputRef.current) {
@@ -45,13 +57,11 @@ const ReviewModal = ({
         if (files && files.length > 0) {
             const file = files[0];
             const previewUrl = URL.createObjectURL(file);
-            
-            // Kiểm tra giới hạn số lượng ảnh
+
             if (reviewImages.length < 5) {
                 setReviewImages([...reviewImages, { file, previewUrl }]);
             }
-            
-            // Reset file input để có thể chọn cùng một file nhiều lần
+
             if (fileInputRef.current) {
                 fileInputRef.current.value = '';
             }
@@ -59,26 +69,57 @@ const ReviewModal = ({
     };
 
     const handleRemoveImage = (indexToRemove: number) => {
-        // Revoke URL để tránh rò rỉ bộ nhớ
         URL.revokeObjectURL(reviewImages[indexToRemove].previewUrl);
         setReviewImages(reviewImages.filter((_, index) => index !== indexToRemove));
     };
 
-    const handleSubmit = () => {
-        // Chỉ gửi file, không gửi URL
-        const fileImages = reviewImages.map(img => img.file);
-        onSubmit({
-            rate,
-            comment,
-            images: fileImages
-        });
+    const handleSubmit = async () => {
+        try {
+            let payload: IPayloadReview = {
+                order: orderId,
+                product: productId,
+                images: [],
+                rate,
+                comment
+            }
+            const fileImages = reviewImages.map(img => img.file);
+            if (fileImages.length > 0) {
+                setLoadingUpload(true)
+                const newImages = (await Promise.all(fileImages.map(async (file) => {
+                    const resUpload = await uploadFile(file);
+                    if (resUpload) {
+                        return {
+                            url: resUpload.secure_url,
+                            publicId: resUpload.public_id
+                        };
+                    }
+                    return null;
+                }))).filter((img): img is { url: string; publicId: string } => img !== null);
+
+                payload = {
+                    ...payload,
+                    images: newImages || []
+                }
+            }
+            const res = await reviewOrder(payload).unwrap()
+            if (res.data) {
+                Toast.show({
+                    type: "success",
+                    text1: res.message
+                })
+            }
+
+            handleClose()
+            refetch()
+        } catch (error) {
+            console.log(error);
+        } finally {
+            setLoadingUpload(false)
+        }
     };
 
     const handleClose = () => {
-        // Dọn dẹp URLs khi đóng modal để tránh rò rỉ bộ nhớ
         reviewImages.forEach(img => URL.revokeObjectURL(img.previewUrl));
-        
-        // Đặt lại state khi đóng modal
         setRate(5);
         setComment('');
         setReviewImages([]);
@@ -174,7 +215,7 @@ const ReviewModal = ({
                                         </Text>
                                     </View>
                                 ))}
-                                
+
                                 {/* Add Image Button (hide if 5 images are uploaded) */}
                                 {reviewImages.length < 5 && (
                                     <TouchableOpacity
@@ -205,8 +246,8 @@ const ReviewModal = ({
                             label="Gửi đánh giá"
                             onPress={handleSubmit}
                             variant="dark"
-                            loading={loading}
-                            disabled={!comment.trim() || loading}
+                            loading={isLoading}
+                            disabled={!comment.trim() || isLoading || loadingUpload}
                             size='lg'
                         />
                     </View>
