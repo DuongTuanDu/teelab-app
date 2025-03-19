@@ -1,3 +1,4 @@
+import { Socket } from "socket.io-client";
 export interface ICustomer {
     _id: string,
     name:string,
@@ -18,6 +19,7 @@ export interface IAuthState {
     emailVerify: string,
     isResetPassword: boolean,
     userInfo?: {},
+    socket: Socket | null
 }
 
 export interface ILogin {

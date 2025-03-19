@@ -100,5 +100,4 @@ export const {
     useOrderMutation,
     useUpdateOrderStatusMutation,
     useReviewOrderMutation,
-    useCreateIntentMutation
 } = orderApi;

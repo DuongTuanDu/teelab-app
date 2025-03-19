@@ -7,18 +7,38 @@ import Loading from '../loading';
 import { useAppDispatch, useAppSelector } from '@/hooks/useRedux';
 import { AuthActions, getAccount } from '@/redux/auth/auth.slice';
 import { eventEmitter } from '@/helpers/eventEmitter';
+import { io } from 'socket.io-client';
 
 interface LayoutProps {
     children: React.ReactNode;
 }
+const SOCKET_SERVER_URL = process.env.EXPO_PUBLIC_BASE_API_URL;
+
 const LayoutScreen = ({ children }: LayoutProps) => {
-    const { isAuthenticated } = useAppSelector(state => state.auth);
+    const { isAuthenticated, customer } = useAppSelector(state => state.auth);
     const [token, setToken] = useState<string | null>(null);
     const dispatch = useAppDispatch();
 
     const { data, isLoading } = useGetAccountQuery(undefined, {
         skip: !token || isAuthenticated
     })
+
+    useEffect(() => {
+        if (isAuthenticated) {
+            const socketConnect = io(SOCKET_SERVER_URL, {
+                query: {
+                    userId: customer?._id,
+                    userType: "customer",
+                },
+            });
+            dispatch(AuthActions.setSocket(socketConnect));
+
+            return () => {
+                socketConnect.disconnect();
+                dispatch(AuthActions.setSocket(null));
+            };
+        }
+    }, [isAuthenticated]);
 
     useEffect(() => {
         const fetchToken = async () => {
