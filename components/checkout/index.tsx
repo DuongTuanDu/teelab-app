@@ -1,6 +1,6 @@
 import { ICart } from '@/redux/cart/cart.interface'
-import { useGetDistrictQuery, useGetProvinceQuery, useGetWardQuery, useOrderMutation } from '@/redux/order/order.query'
-import React, { useState } from 'react'
+import { useCreateOrderSepayMutation, useGetDistrictQuery, useGetProvinceQuery, useGetWardQuery, useOrderMutation } from '@/redux/order/order.query'
+import React, { useEffect, useState } from 'react'
 import { View, Text, TextInput, ScrollView, TouchableOpacity, Modal, ActivityIndicator, Image } from 'react-native'
 import { Feather } from '@expo/vector-icons'
 import { formatPrice } from '@/helpers/formatPrice'
@@ -13,6 +13,7 @@ import Toast from 'react-native-toast-message'
 import { useRouter } from 'expo-router'
 import { CartActions } from '@/redux/cart/cart.slice'
 import { eventEmitter } from '@/helpers/eventEmitter'
+import CheckoutQr from './checkout-qr'
 
 interface IProps {
     open: boolean,
@@ -42,7 +43,7 @@ interface IOrderForm {
     phone: string
     address: string
     note: string
-    paymentMethod: 'COD' | 'VNPAY' | 'STRIPE'
+    paymentMethod: 'COD' | 'SEPAY'
 }
 
 // Schema validation sử dụng yup
@@ -64,10 +65,11 @@ const CheckoutForm = ({
     isCart = true,
     totalBuyNow = 0
 }: IProps) => {
-    
     const router = useRouter()
+    const { socket } = useAppSelector(state => state.auth)
     const dispatch = useAppDispatch()
     const [createOrder, { isLoading, error }] = useOrderMutation()
+    const [createOrderSepay, { isLoading: loadingSepay, error: errorSepay }] = useCreateOrderSepayMutation()
     const { totalAmount } = useAppSelector(state => state.cart)
     const { isAuthenticated } = useAppSelector(state => state.auth)
     const [location, setLocation] = useState<ILocation>({
@@ -84,7 +86,8 @@ const CheckoutForm = ({
             name: "",
         },
     });
-
+    const [qrcode, setQrcode] = useState<string | null>(null)
+    const [sessionId, setSessionId] = useState<string | null>(null)
     const { data: provinces = [], isLoading: isLoadingProvinces } = useGetProvinceQuery();
     const { data: districts = [], isLoading: isLoadingDistricts } = useGetDistrictQuery(
         location.province.id,
@@ -95,10 +98,43 @@ const CheckoutForm = ({
         { skip: !location.district.id }
     );
 
+    const handlePaymentSuccess = (id: string) => {
+        console.log({ id });
+        if (id === sessionId) {
+            Toast.show({
+                type: "success",
+                text1: "📢 Đặt hàng thành công",
+                text2: "Cảm ơn quý khách đã tin tưởng sản phẩm Teelab ❤️"
+            })
+            if (isCart) {
+                dispatch(CartActions.clearCart())
+            }
+            eventEmitter.emit('createOrder');
+            router.replace('/orders')
+        }
+    }
+
+    useEffect(() => {
+        if (socket && sessionId) {
+            socket.on("paymentSuccess", handlePaymentSuccess)
+
+            return () => {
+                socket.off("paymentSuccess", handlePaymentSuccess)
+            }
+        }
+    }, [socket, sessionId])
+
     if (error) {
         Toast.show({
             type: "error",
             text1: error?.message || "Có lỗi xảy ra khi đặt hàng"
+        })
+    }
+
+    if (errorSepay) {
+        Toast.show({
+            type: "error",
+            text1: errorSepay?.message || "Có lỗi xảy ra khi tạo thanh toán"
         })
     }
 
@@ -118,15 +154,17 @@ const CheckoutForm = ({
                 return
             }
 
+            const payloadOrder = {
+                ...values,
+                ...location,
+                products,
+                totalAmount: isCart ? totalAmount : totalBuyNow,
+            }
+
             switch (values.paymentMethod) {
                 case "COD":
                     const resCod = await createOrder({
-                        order: {
-                            ...values,
-                            ...location,
-                            products,
-                            totalAmount: isCart ? totalAmount : totalBuyNow,
-                        },
+                        order: payloadOrder,
                         method: 'cod'
                     }).unwrap()
                     if (resCod?._id) {
@@ -141,6 +179,13 @@ const CheckoutForm = ({
                         eventEmitter.emit('createOrder');
                         router.replace('/orders')
                         break
+                    }
+                case "SEPAY":
+                    const resSessionId = await createOrderSepay(payloadOrder).unwrap()
+                    if (resSessionId) {
+                        const qrTem = `https://qr.sepay.vn/img?acc=96247TEELABVIP1&bank=BIDV&amount=${isCart ? totalAmount : totalBuyNow}&des=${resSessionId}`
+                        setQrcode(qrTem)
+                        setSessionId(resSessionId)
                     }
                 default:
                     break
@@ -426,34 +471,22 @@ const CheckoutForm = ({
                         </TouchableOpacity>
 
                         <TouchableOpacity
-                            className={`flex-row items-center border rounded-lg p-3 mb-3 ${formik.values.paymentMethod === 'VNPAY' ? 'border-blue-500 bg-blue-50' : 'border-gray-300'}`}
-                            onPress={() => formik.setFieldValue('paymentMethod', 'VNPAY')}
+                            className={`flex-row items-center border rounded-lg p-3 mb-3 ${formik.values.paymentMethod === 'SEPAY' ? 'border-blue-500 bg-blue-50' : 'border-gray-300'}`}
+                            onPress={() => formik.setFieldValue('paymentMethod', 'SEPAY')}
                         >
-                            <View className={`w-5 h-5 rounded-full mr-2 border ${formik.values.paymentMethod === 'VNPAY' ? 'border-blue-500' : 'border-gray-400'} items-center justify-center`}>
-                                {formik.values.paymentMethod === 'VNPAY' && (
+                            <View className={`w-5 h-5 rounded-full mr-2 border ${formik.values.paymentMethod === 'SEPAY' ? 'border-blue-500' : 'border-gray-400'} items-center justify-center`}>
+                                {formik.values.paymentMethod === 'SEPAY' && (
                                     <View className="w-3 h-3 rounded-full bg-blue-500" />
                                 )}
                             </View>
                             <View className="flex-1">
-                                <Text className="font-medium">Thanh toán qua VNPAY</Text>
-                                <Text className="text-xs text-gray-500 mt-1">Thanh toán an toàn và nhanh chóng với VNPAY</Text>
+                                <Text className="font-medium">Thanh toán qua QR</Text>
+                                <Text className="text-xs text-gray-500 mt-1">Thanh toán an toàn và nhanh chóng với QR</Text>
                             </View>
                         </TouchableOpacity>
-
-                        <TouchableOpacity
-                            className={`flex-row items-center border rounded-lg p-3 ${formik.values.paymentMethod === 'STRIPE' ? 'border-blue-500 bg-blue-50' : 'border-gray-300'}`}
-                            onPress={() => formik.setFieldValue('paymentMethod', 'STRIPE')}
-                        >
-                            <View className={`w-5 h-5 rounded-full mr-2 border ${formik.values.paymentMethod === 'STRIPE' ? 'border-blue-500' : 'border-gray-400'} items-center justify-center`}>
-                                {formik.values.paymentMethod === 'STRIPE' && (
-                                    <View className="w-3 h-3 rounded-full bg-blue-500" />
-                                )}
-                            </View>
-                            <View className="flex-1">
-                                <Text className="font-medium">Thanh toán qua Stripe</Text>
-                                <Text className="text-xs text-gray-500 mt-1">Thanh toán an toàn với Stripe, hỗ trợ nhiều loại thẻ</Text>
-                            </View>
-                        </TouchableOpacity>
+                        {
+                            qrcode && formik.values.paymentMethod === 'SEPAY' && <CheckoutQr {...{ qrcode }} />
+                        }
                         {showError('paymentMethod')}
                     </View>
 
@@ -474,7 +507,7 @@ const CheckoutForm = ({
                             <Text className="font-bold text-lg">{formatPrice(isCart ? totalAmount : totalBuyNow)}đ</Text>
                         </View>
                         <CustomButton
-                            label='Đặt hàng'
+                            label={formik.values.paymentMethod === 'SEPAY' ? (qrcode ? "Vui lòng quét mã QR" : "Tạo QR thanh toán") : "Đặt hàng"}
                             icon="arrow-forward-outline"
                             size="lg"
                             onPress={() => {
@@ -485,7 +518,8 @@ const CheckoutForm = ({
                                 formik.handleSubmit();
                             }}
                             variant="primary"
-                            loading={isLoading}
+                            loading={isLoading || loadingSepay}
+                            disabled={qrcode ? true : false}
                         />
                     </View>
                 </ScrollView>

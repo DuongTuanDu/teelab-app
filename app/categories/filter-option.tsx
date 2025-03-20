@@ -49,8 +49,8 @@ const FilterOption = ({ currentFilters, onFilterChange }: FilterOptionProps) => 
     return (
         <View className="p-4 space-y-6 bg-white">
             {/* Header */}
-            <View className="flex-row items-center justify-between">
-                <Text className="text-lg font-semibold">Bộ lọc</Text>
+            <View className="flex-row items-center justify-end">
+                {/* <Text className="text-lg font-semibold">Bộ lọc</Text> */}
                 {hasActiveFilters && (
                     <TouchableOpacity
                         onPress={() =>

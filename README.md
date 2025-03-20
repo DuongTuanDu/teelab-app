@@ -48,3 +48,24 @@ Join our community of developers creating universal apps.
 
 - [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
 - [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+
+## Webhook local Sepay
+cloudflared tunnel --url http://localhost:4000
+
+## Data webhook 
+{
+  data: {
+    gateway: 'BIDV',
+    transactionDate: '2025-03-20 22:33:28',
+    accountNumber: '2143288159',
+    subAccount: '96247TEELABVIP1',
+    code: null,
+    content: '67dc353d7b8494dd383116c5 FT25080730009989',
+    transferType: 'in',
+    description: 'BankAPINotify 67dc353d7b8494dd383116c5 FT25080730009989',
+    transferAmount: 2000,
+    referenceCode: '325cfbeb-5976-480b-baeb-3adac82d7975',
+    accumulated: 0,
+    id: 10045513
+  }
+}

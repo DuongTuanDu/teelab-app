@@ -82,12 +82,13 @@ export const orderApi = createApi({
                 body: { order, product, rate, comment, images },
             }),
         }),
-        createIntent: builder.mutation<{ data: any }, { amount: number }>({
-            query: ({ amount }) => ({
-                url: `/create-payment-intent`,
+        createOrderSepay: builder.mutation<string, IPayloadOrder>({
+            query: (data) => ({
+                url: `/order-sepay-session`,
                 method: "POST",
-                body: { amount },
+                body: data,
             }),
+            transformResponse: (response) => response.data,
         }),
     })
 });
@@ -100,4 +101,5 @@ export const {
     useOrderMutation,
     useUpdateOrderStatusMutation,
     useReviewOrderMutation,
+    useCreateOrderSepayMutation
 } = orderApi;

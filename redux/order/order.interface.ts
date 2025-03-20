@@ -45,7 +45,7 @@ export interface IOrder {
     },
     phone: string,
     address: string,
-    paymentMethod: "COD" | "STRIPE" | "VNPAY",
+    paymentMethod: "COD" | "STRIPE" | "VNPAY" | "SEPAY",
     note: string,
     totalAmount: number,
     createdAt: string,
@@ -76,7 +76,7 @@ export interface IPayloadOrder {
     },
     phone: string,
     address: string,
-    paymentMethod: "COD" | "STRIPE" | "VNPAY",
+    paymentMethod: "COD" | "SEPAY",
     note?: string,
     totalAmount: number,
 }

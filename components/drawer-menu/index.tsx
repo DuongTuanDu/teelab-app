@@ -50,7 +50,7 @@ const DrawerMenu = ({ open, onClose }: IProps) => {
     return (
         <Modal
             visible={open}
-            animationType="slide"
+            animationType="fade"
             transparent={true}
             onRequestClose={onClose}
         >

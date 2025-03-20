@@ -6,18 +6,18 @@ import {
     TouchableOpacity,
     TextInput,
     ScrollView,
-    ActivityIndicator
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { useAppDispatch, useAppSelector } from '@/hooks/useRedux';
-// import { deleteFile, uploadFile } from '@/helpers/uploadCloudinary';
 import { updateAccount } from '@/redux/auth/auth.thunk';
-import setUserInfo, { AuthActions } from '@/redux/auth/auth.slice';
+import { AuthActions } from '@/redux/auth/auth.slice';
 import Toast from 'react-native-toast-message';
 import { Formik } from 'formik';
 import * as yup from 'yup';
 import CustomButton from '@/components/custombutton';
 import { IAccount } from '@/redux/auth/auth.interface';
+import { deleteFile, uploadFile } from '@/utils/cloudinary';
+import * as ImagePicker from 'expo-image-picker';
 
 interface IAvatar {
     url?: string;
@@ -42,7 +42,7 @@ const Profile = () => {
     const { customer } = useAppSelector(state => state.auth);
     const [loading, setLoading] = useState(false);
     const [avatar, setAvatar] = useState<IAvatar>({});
-    const [selectedImage, setSelectedImage] = useState<string | null>(null);
+    const [selectedImage, setSelectedImage] = useState<any | null>(null);
 
     useEffect(() => {
         if (customer) {
@@ -53,39 +53,39 @@ const Profile = () => {
         }
     }, [customer]);
 
-    // const pickImage = async () => {
-    //     try {
-    //         const result = await ImagePicker.launchImageLibraryAsync({
-    //             mediaTypes: ImagePicker.MediaTypeOptions.Images,
-    //             allowsEditing: true,
-    //             aspect: [1, 1],
-    //             quality: 0.8,
-    //         });
+    const pickImage = async () => {
+        try {
+            const result = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                allowsEditing: true,
+                aspect: [1, 1],
+                quality: 0.8,
+            });
 
-    //         if (!result.canceled) {
-    //             setSelectedImage(result.assets[0].uri);
-    //         }
-    //     } catch (error) {
-    //         Toast.show({
-    //             type: 'error',
-    //             text1: 'Không thể chọn ảnh',
-    //             text2: 'Vui lòng thử lại sau',
-    //         });
-    //     }
-    // };
+            if (!result.canceled) {
+                setSelectedImage(result.assets[0].uri);
+            }
+        } catch (error) {
+            Toast.show({
+                type: 'error',
+                text1: 'Không thể chọn ảnh',
+                text2: 'Vui lòng thử lại sau',
+            });
+        }
+    };
 
     const onSubmit = async (values: IAccount) => {
         try {
             setLoading(true);
             let avatarUpload = avatar;
 
-            // if (selectedImage) {
-            //     const resUpload = await uploadFile(selectedImage);
-            //     avatarUpload = {
-            //         url: resUpload.secure_url,
-            //         publicId: resUpload.public_id,
-            //     };
-            // }
+            if (selectedImage) {
+                const resUpload = await uploadFile(selectedImage);
+                avatarUpload = {
+                    url: resUpload.secure_url,
+                    publicId: resUpload.public_id,
+                };
+            }
 
             const updatedUserInfo = {
                 ...values,
@@ -97,12 +97,12 @@ const Profile = () => {
             const res = await dispatch(updateAccount(updatedUserInfo)).unwrap();
 
             if (res.success) {
-                // const isNewAvatarUploaded =
-                //     avatarUpload.publicId && avatarUpload.publicId !== avatar?.publicId;
+                const isNewAvatarUploaded =
+                    avatarUpload.publicId && avatarUpload.publicId !== avatar?.publicId;
 
-                // if (isNewAvatarUploaded && avatar.publicId) {
-                //     await deleteFile(avatar.publicId);
-                // }
+                if (isNewAvatarUploaded && avatar.publicId) {
+                    await deleteFile(avatar.publicId);
+                }
 
                 dispatch(AuthActions.setUserInfo(res.data));
                 Toast.show({
@@ -147,12 +147,12 @@ const Profile = () => {
                                 </View>
                             )}
                         </View>
-                        {/* <TouchableOpacity
+                        <TouchableOpacity
                             onPress={pickImage}
                             className="absolute bottom-0 right-0 bg-blue-500 p-2 rounded-full"
                         >
                             <Feather name="camera" size={18} color="white" />
-                        </TouchableOpacity> */}
+                        </TouchableOpacity>
                     </View>
                     <Text className="text-xl font-bold mt-4 mb-1 text-gray-800">
                         {customer?.name}

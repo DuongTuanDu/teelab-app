@@ -120,7 +120,7 @@ const Account = () => {
 
             {/* Content Card */}
             <View className="flex-grow w-full">
-              <View className="bg-white rounded-lg shadow-sm p-4">
+              <View className="bg-white rounded-lg shadow-sm p-4 mb-7">
                 <AccountContent />
               </View>
             </View>
