@@ -8,13 +8,12 @@ import { useAppDispatch, useAppSelector } from '@/hooks/useRedux';
 import { AuthActions, getAccount } from '@/redux/auth/auth.slice';
 import { eventEmitter } from '@/helpers/eventEmitter';
 import { io } from 'socket.io-client';
-
-interface LayoutProps {
+interface IProps {
     children: React.ReactNode;
 }
 const SOCKET_SERVER_URL = process.env.EXPO_PUBLIC_BASE_API_URL;
 
-const LayoutScreen = ({ children }: LayoutProps) => {
+const LayoutScreen = ({ children }: IProps) => {
     const { isAuthenticated, customer } = useAppSelector(state => state.auth);
     const [token, setToken] = useState<string | null>(null);
     const dispatch = useAppDispatch();
