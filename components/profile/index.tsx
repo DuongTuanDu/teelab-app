@@ -103,8 +103,10 @@ const Profile = () => {
                 if (isNewAvatarUploaded && avatar.publicId) {
                     await deleteFile(avatar.publicId);
                 }
+                console.log("Response from API:", res.data);
+                
 
-                dispatch(AuthActions.setUserInfo(res.data));
+                dispatch(AuthActions.setCustomer(res?.data));
                 Toast.show({
                     type: 'success',
                     text1: res.message,

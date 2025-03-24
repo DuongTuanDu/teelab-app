@@ -50,7 +50,7 @@ Join our community of developers creating universal apps.
 - [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
 
 ## Webhook local Sepay
-cloudflared tunnel --url http://localhost:4000
+cloudflared tunnel --url http://localhost:8080
 
 ## Data webhook 
 {

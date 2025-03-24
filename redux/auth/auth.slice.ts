@@ -33,7 +33,7 @@ export const authSlice = createSlice({
     name: "auth",
     initialState,
     reducers: {
-        setCustomer: (state, { payload }: { payload: ICustomer }) => {
+        setCustomer: (state, { payload }: { payload: ICustomer | any }) => {
             state.customer = payload;
         },
         setIsAuthenticated: (state, { payload }: { payload: boolean }) => {
