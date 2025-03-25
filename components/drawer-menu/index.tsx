@@ -94,6 +94,14 @@ const DrawerMenu = ({ open, onClose }: IProps) => {
 
                             <TouchableOpacity
                                 className="flex-row items-center py-4 px-2 border-b border-gray-100"
+                                onPress={() => handleNavigation('/promotions')}
+                            >
+                                <Feather name="gift" size={22} color="#333" />
+                                <Text className="ml-3 text-lg font-medium text-gray-800">Khuyến mãi</Text>
+                            </TouchableOpacity>
+
+                            <TouchableOpacity
+                                className="flex-row items-center py-4 px-2 border-b border-gray-100"
                                 onPress={() => handleNavigation('/cart')}
                             >
                                 <Feather name="shopping-bag" size={22} color="#333" />
